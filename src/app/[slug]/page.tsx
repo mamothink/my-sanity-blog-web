@@ -5,11 +5,14 @@ import { PortableText } from "@portabletext/react"
 import { POST_BY_SLUG_QUERY } from "@/lib/queries"
 import type { Image } from "sanity"
 
+// PortableText 用に最低限の型を用意（any は使わない）
+type PTBlock = { _type: string; [key: string]: unknown }
+
 type Post = {
   _id: string
   title: string
   slug: { current: string }
-  body: any
+  body?: PTBlock | PTBlock[] | null
   mainImage?: Image
 }
 
@@ -19,7 +22,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
   })
 
   if (!post) {
-    return <main className="max-w-2xl mx-auto p-6">記事が見つかりませんでした。</main>
+    // 未使用 Warning を避けつつ、正しく 404 へ
+    notFound()
   }
 
   return (
@@ -33,7 +37,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
         />
       )}
       <h1 className="text-3xl font-bold">{post.title}</h1>
-      <PortableText value={post.body} />
+      <PortableText value={post.body ?? []} />
     </main>
   )
 }

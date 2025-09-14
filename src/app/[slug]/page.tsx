@@ -12,8 +12,10 @@ type Post = {
   _id: string
   title: string
   slug: { current: string }
-  body?: PTBlock | PTBlock[] | null
-  mainImage?: Image
+  mainImage?: any
+  body?: any
+  publishedAt?: string // ← これが必要
+  excerpt?: string
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
@@ -36,7 +38,14 @@ export default async function Page({ params }: { params: { slug: string } }) {
           className="rounded-xl"
         />
       )}
-      <h1 className="text-3xl font-bold">{post.title}</h1>
+   <h1 className="text-3xl font-bold">{post.title}</h1>
+
+{post.publishedAt && (
+  <p className="text-sm text-gray-500 mt-1">
+    {new Date(post.publishedAt).toLocaleDateString("ja-JP")}
+  </p>
+)}
+
       <PortableText value={post.body ?? []} />
     </main>
   )

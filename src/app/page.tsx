@@ -1,17 +1,20 @@
+import type { Image } from "sanity";
+
+type Post = {
+  _id: string;
+  title: string;
+  slug: { current: string }; // slugはオブジェクトのまま
+  mainImage?: Image;
+  publishedAt?: string; // ← ? を付ける
+  excerpt?: string;     // ← ? を付ける
+};
+
 import Link from "next/link"
 import { client } from "@/lib/sanity.client"
 import { POSTS_QUERY } from "@/lib/queries"
 import { urlFor } from "@/lib/image"
-import type { Image } from "sanity"
 
 export const revalidate = 60
-
-type Post = {
-  _id: string
-  title: string
-  slug: { current: string }
-  mainImage?: Image
-}
 
 export default async function Page() {
   const posts: Post[] = await client.fetch(POSTS_QUERY)
@@ -34,8 +37,18 @@ export default async function Page() {
               />
             )}
             <h2 className="text-xl font-semibold">
-              <Link href={`/${post.slug.current}`}>{post.title}</Link>
-            </h2>
+  <Link href={`/${post.slug.current}`}>{post.title}</Link>
+</h2>
+
+{post.publishedAt && (
+  <p className="text-sm text-gray-500 mt-1">
+    {new Date(post.publishedAt).toLocaleDateString("ja-JP")}
+  </p>
+)}
+
+{post.excerpt && (
+  <p className="text-gray-700 mt-2">{post.excerpt}</p>
+)}
           </li>
         ))}
       </ul>

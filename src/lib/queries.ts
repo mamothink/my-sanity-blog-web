@@ -11,7 +11,7 @@ export const POSTS_QUERY = `
       title,
       slug,
       mainImage,
-      publishedAt,
+      "publishedAt": coalesce(publishedAt, _createdAt),
       excerpt,
       author->{ _id, name, picture, slug },
       categories[]->{ _id, title, slug }
@@ -28,7 +28,7 @@ export const POST_BY_SLUG_QUERY = `
     slug,
     mainImage,
     body,
-    publishedAt,
+    "publishedAt": coalesce(publishedAt, _createdAt),
     excerpt,
     author->{ _id, name, picture, slug },
     categories[]->{ _id, title, slug }
@@ -58,7 +58,7 @@ export const POSTS_BY_AUTHOR_QUERY = `
       title,
       slug,
       mainImage,
-      publishedAt,
+      "publishedAt": coalesce(publishedAt, _createdAt),
       excerpt,
       author->{ _id, name, picture, slug },
       categories[]->{ _id, title, slug }
@@ -93,7 +93,7 @@ export const CATEGORY_WITH_POSTS_QUERY = `
       title,
       slug,
       mainImage,
-      publishedAt,
+      "publishedAt": coalesce(publishedAt, _createdAt),
       excerpt,
       author->{ _id, name, picture, slug },
       categories[]->{ _id, title, slug }
@@ -113,12 +113,13 @@ export const POSTS_BY_CATEGORY_SLUG_QUERY = `
     title,
     slug,
     mainImage,
-    publishedAt,
+    "publishedAt": coalesce(publishedAt, _createdAt),
     excerpt,
     author->{ _id, name, picture, slug },
     categories[]->{ _id, title, slug }
   }
 `
+
 /**
  * 記事詳細＋関連記事（同じカテゴリの記事を3件まで）
  */
@@ -129,7 +130,7 @@ export const POST_WITH_RELATED_QUERY = `
     slug,
     mainImage,
     body,
-    publishedAt,
+    "publishedAt": coalesce(publishedAt, _createdAt),
     excerpt,
     author->{ _id, name, picture, slug },
     categories[]->{ _id, title, slug },
@@ -143,15 +144,13 @@ export const POST_WITH_RELATED_QUERY = `
       title,
       slug,
       mainImage,
-      publishedAt,
+      "publishedAt": coalesce(publishedAt, _createdAt),
       excerpt,
       categories[]->{ _id, title, slug }
     }
   }
 `
-/**
- * 関連記事（同じカテゴリー、現在の記事を除外）
- */
+
 /**
  * 関連記事（同じカテゴリー／現在の記事を除外）
  */
@@ -167,7 +166,7 @@ export const RELATED_POSTS_QUERY = `
     title,
     slug,
     mainImage,
-    publishedAt,
+    "publishedAt": coalesce(publishedAt, _createdAt),
     excerpt,
     author->{ _id, name, picture, slug },
     categories[]->{ _id, title, slug }

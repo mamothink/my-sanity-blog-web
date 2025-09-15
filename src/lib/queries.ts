@@ -1,12 +1,11 @@
-import { groq } from "next-sanity";
-
-const notDraft = "!(_id in path('drafts.**'))";
+// src/lib/queries.ts
+// ここでは groq を使いません（文字列でOK）
 
 /**
  * トップ/一覧用：投稿に categories を含めて取得
  */
-export const POSTS_QUERY = groq`
-  *[_type == "post" && ${notDraft}] 
+export const POSTS_QUERY = `
+  *[_type == "post" && !(_id in path('drafts.**'))]
     | order(publishedAt desc, _createdAt desc)[0...10]{
       _id,
       title,
@@ -15,15 +14,15 @@ export const POSTS_QUERY = groq`
       publishedAt,
       excerpt,
       author->{ _id, name, picture, slug },
-      categories[]->{ _id, title, slug }  // ★追加
+      categories[]->{ _id, title, slug }
     }
-`;
+`
 
 /**
  * 記事詳細用：本文と categories を含めて取得
  */
-export const POST_BY_SLUG_QUERY = groq`
-  *[_type == "post" && slug.current == $slug && ${notDraft}][0]{
+export const POST_BY_SLUG_QUERY = `
+  *[_type == "post" && slug.current == $slug && !(_id in path('drafts.**'))][0]{
     _id,
     title,
     slug,
@@ -32,14 +31,14 @@ export const POST_BY_SLUG_QUERY = groq`
     publishedAt,
     excerpt,
     author->{ _id, name, picture, slug },
-    categories[]->{ _id, title, slug }    // ★追加
+    categories[]->{ _id, title, slug }
   }
-`;
+`
 
 /**
  * 著者ページ用
  */
-export const AUTHOR_BY_SLUG_QUERY = groq`
+export const AUTHOR_BY_SLUG_QUERY = `
   *[_type == "author" && slug.current == $slug][0]{
     _id,
     name,
@@ -47,13 +46,13 @@ export const AUTHOR_BY_SLUG_QUERY = groq`
     picture{ ..., alt },
     bio
   }
-`;
+`
 
 /**
- * 著者の投稿一覧（必要に応じて categories を使いたければ同様に追加可）
+ * 著者の投稿一覧
  */
-export const POSTS_BY_AUTHOR_QUERY = groq`
-  *[_type == "post" && author->slug.current == $slug && ${notDraft}]
+export const POSTS_BY_AUTHOR_QUERY = `
+  *[_type == "post" && author->slug.current == $slug && !(_id in path('drafts.**'))]
     | order(publishedAt desc, _createdAt desc)[0...20]{
       _id,
       title,
@@ -61,6 +60,62 @@ export const POSTS_BY_AUTHOR_QUERY = groq`
       mainImage,
       publishedAt,
       excerpt,
-      author->{ _id, name, picture, slug }
+      author->{ _id, name, picture, slug },
+      categories[]->{ _id, title, slug }
     }
-`;
+`
+
+// ===== カテゴリー関連 =====
+
+// 静的生成用：すべてのカテゴリースラッグ
+export const ALL_CATEGORY_SLUGS_QUERY = `
+  *[_type == "category" && defined(slug.current)]{
+    "slug": slug.current
+  }
+`
+
+// カテゴリー情報 + そのカテゴリーに属する記事一覧（^を使わない安全版）
+export const CATEGORY_WITH_POSTS_QUERY = `
+  {
+    "category": *[_type == "category" && slug.current == $slug][0]{
+      _id,
+      title,
+      description,
+      "slug": slug.current
+    },
+    "posts": *[
+      _type == "post" &&
+      !(_id in path('drafts.**')) &&
+      count(categories[@->slug.current == $slug]) > 0
+    ]
+    | order(publishedAt desc, _createdAt desc){
+      _id,
+      title,
+      slug,
+      mainImage,
+      publishedAt,
+      excerpt,
+      author->{ _id, name, picture, slug },
+      categories[]->{ _id, title, slug }
+    }
+  }
+`
+
+// 記事だけ欲しい版
+export const POSTS_BY_CATEGORY_SLUG_QUERY = `
+  *[
+    _type == "post" &&
+    !(_id in path('drafts.**')) &&
+    count(categories[@->slug.current == $slug]) > 0
+  ]
+  | order(publishedAt desc, _createdAt desc){
+    _id,
+    title,
+    slug,
+    mainImage,
+    publishedAt,
+    excerpt,
+    author->{ _id, name, picture, slug },
+    categories[]->{ _id, title, slug }
+  }
+`

@@ -72,8 +72,6 @@ export default async function PostPage({ params }: { params: Params }) {
   const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, { slug: params.slug });
   if (!post) return notFound();
 
-  const postSlug = typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
-
   // 関連記事（同じカテゴリ、本人除外）
   const categoryIds =
     post.categories?.map((c) => c._id).filter((v): v is string => Boolean(v)) ?? [];
@@ -170,15 +168,18 @@ export default async function PostPage({ params }: { params: Params }) {
                         No Image
                       </div>
                     )}
-
+                    {/* タイトル */}
                     <h3 className="text-base font-medium hover:underline">{r.title}</h3>
                   </Link>
 
+                  {/* 投稿日 */}
                   {r.publishedAt && (
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(r.publishedAt).toLocaleDateString("ja-JP")}
                     </p>
                   )}
+
+                  {/* 抜粋 */}
                   {r.excerpt && (
                     <p className="text-sm text-gray-700 mt-1 line-clamp-2">{r.excerpt}</p>
                   )}

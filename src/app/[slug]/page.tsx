@@ -1,60 +1,55 @@
-import { Metadata } from "next"
-import { notFound } from "next/navigation"
+// src/app/[slug]/page.tsx
 import Link from "next/link"
+import { notFound } from "next/navigation"
 import { client } from "@/lib/sanity.client"
 import { POST_BY_SLUG_QUERY } from "@/lib/queries"
 import { urlFor } from "@/lib/image"
 
-// ===== 型定義 =====
+export const revalidate = 60
+
+// ===== 型定義（any なし） =====
+type Slug = string | { current: string }
+
 type SanityImage = {
   _type: "image"
   asset: {
-    _ref: string
     _type: "reference"
+    _ref: string
   }
+}
+
+type AuthorRef = {
+  _id: string
+  name?: string
+  slug?: Slug
+  picture?: SanityImage
+}
+
+type CategoryRef = {
+  _id: string
+  title: string
+  slug: Slug
 }
 
 type Post = {
   _id: string
   title: string
-  slug: string | { current: string }
+  slug: Slug
   mainImage?: SanityImage
   publishedAt?: string
   excerpt?: string
-  body?: any // PortableText の型を入れたい場合は @portabletext/types を使う
-  author?: {
-    _id: string
-    name?: string
-    picture?: SanityImage
-    slug?: { current: string }
-  }
-  categories?: { _id: string; title: string; slug: { current: string } }[]
+  body?: unknown // PortableText を使うなら PortableTextBlock[] などに変更可
+  author?: AuthorRef
+  categories?: CategoryRef[]
 }
 
 type Params = { slug: string }
-
-// ISR（更新から最長60秒で反映）
-export const revalidate = 60
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Params
-}): Promise<Metadata> {
-  const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, {
-    slug: params.slug,
-  })
-  if (!post) return { title: "記事が見つかりません" }
-  return {
-    title: post.title,
-    description: post.excerpt ?? `${post.title} の記事詳細`,
-  }
-}
 
 export default async function PostPage({ params }: { params: Params }) {
   const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, {
     slug: params.slug,
   })
+
   if (!post) return notFound()
 
   const postSlug =
@@ -73,10 +68,10 @@ export default async function PostPage({ params }: { params: Params }) {
         )}
 
         {/* タイトル */}
-        <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
+        <h1 className="mb-2 text-3xl font-bold">{post.title}</h1>
 
         {/* 日付と著者 */}
-        <div className="text-sm text-gray-500 mb-4">
+        <div className="mb-4 text-sm text-gray-500">
           {post.publishedAt &&
             new Date(post.publishedAt).toLocaleDateString("ja-JP")}
           {post.author?.name && (
@@ -97,7 +92,7 @@ export default async function PostPage({ params }: { params: Params }) {
           )}
         </div>
 
-        {/* 本文 */}
+        {/* 抜粋（本文を描画しているなら差し替え） */}
         {post.excerpt && <p className="mb-6">{post.excerpt}</p>}
 
         {/* カテゴリーリンク */}
@@ -118,6 +113,9 @@ export default async function PostPage({ params }: { params: Params }) {
             })}
           </div>
         ) : null}
+
+        {/* 記事スラッグ（デバッグ用に一時的に表示したい場合）
+        <pre className="mt-4 text-xs text-gray-400">{postSlug}</pre> */}
       </article>
     </main>
   )

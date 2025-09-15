@@ -149,3 +149,27 @@ export const POST_WITH_RELATED_QUERY = `
     }
   }
 `
+/**
+ * 関連記事（同じカテゴリー、現在の記事を除外）
+ */
+/**
+ * 関連記事（同じカテゴリー／現在の記事を除外）
+ */
+export const RELATED_POSTS_QUERY = `
+  *[
+    _type == "post" &&
+    !(_id in path('drafts.**')) &&
+    count(categories[@._ref in $categoryIds]) > 0 &&
+    _id != $currentPostId
+  ]
+  | order(publishedAt desc, _createdAt desc)[0...4]{
+    _id,
+    title,
+    slug,
+    mainImage,
+    publishedAt,
+    excerpt,
+    author->{ _id, name, picture, slug },
+    categories[]->{ _id, title, slug }
+  }
+`

@@ -12,6 +12,12 @@ type Author = {
   slug?: { current: string };
 };
 
+type Category = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+};
+
 type Post = {
   _id: string;
   title: string;
@@ -20,6 +26,7 @@ type Post = {
   publishedAt?: string;
   excerpt?: string;
   author?: Author;
+  categories?: Category[]; // 👈 追加
 };
 
 export const revalidate = 60;
@@ -66,6 +73,21 @@ export default async function Page() {
                 </Link>
               </p>
             )}
+
+            {/* 👇 カテゴリー表示（タグ風） */}
+            {post.categories?.length ? (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {post.categories.map((cat) => (
+                  <span
+                    key={cat._id}
+                    className="px-2 py-0.5 bg-gray-200 rounded-full text-xs"
+                    title={cat.title}
+                  >
+                    {cat.title}
+                  </span>
+                ))}
+              </div>
+            ) : null}
 
             {post.excerpt && (
               <p className="mt-2 text-gray-700">{post.excerpt}</p>

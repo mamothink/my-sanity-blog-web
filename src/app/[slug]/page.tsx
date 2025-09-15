@@ -7,6 +7,12 @@ import { POST_BY_SLUG_QUERY } from "@/lib/queries";
 import type { Image } from "sanity";
 import type { PortableTextBlock } from "@portabletext/types";
 
+type Category = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+};
+
 type Author = {
   _id: string;
   name: string;
@@ -23,6 +29,7 @@ type Post = {
   publishedAt?: string;
   excerpt?: string;
   author?: Author;
+  categories?: Category[];
 };
 
 export default async function Page({ params }: { params: { slug: string } }) {
@@ -34,6 +41,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-6">
+      {/* メイン画像 */}
       {post.mainImage && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -43,15 +51,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
         />
       )}
 
+      {/* タイトル */}
       <h1 className="text-3xl font-bold">{post.title}</h1>
 
+      {/* 日付 */}
       {post.publishedAt && (
         <p className="text-sm text-gray-500">
           {new Date(post.publishedAt).toLocaleDateString("ja-JP")}
         </p>
       )}
 
-      {/* 著者リンク付き表示 */}
+      {/* 著者リンク */}
       {post.author?.name && post.author?.slug?.current && (
         <p className="text-sm text-gray-600">
           Author:{" "}
@@ -64,6 +74,21 @@ export default async function Page({ params }: { params: { slug: string } }) {
         </p>
       )}
 
+      {/* カテゴリー表示 */}
+      {post.categories?.length ? (
+        <div className="flex flex-wrap gap-2">
+          {post.categories.map((cat) => (
+            <span
+              key={cat._id}
+              className="px-2 py-1 bg-gray-200 rounded-full text-sm"
+            >
+              {cat.title}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {/* 本文 */}
       <PortableText value={post.body ?? []} />
     </main>
   );

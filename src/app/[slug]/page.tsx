@@ -151,82 +151,82 @@ export default async function PostPage({ params }: { params: Params }) {
         ) : null}
       </article>
 
-      {/* === 関連記事 === */}
-      {related.length > 0 && (
-        <section className="mt-12">
-          <h2 className="mb-4 text-xl font-semibold">関連記事</h2>
-          <ul className="grid gap-5 sm:grid-cols-2">
-            {related.map((r) => (
-              <li
-                key={r._id}
-                className="group overflow-hidden rounded-xl border border-gray-200 bg-white/70 p-3 shadow-sm transition hover:shadow-md"
-              >
-                <Link href={`/${r.slug}`} className="block">
-                  {/* サムネイル（安全に） */}
-                  <div className="relative mb-3 overflow-hidden rounded-lg">
-                    {hasAssetRef(r.mainImage) ? (
-                      <Image
-                        src={urlFor(r.mainImage).width(800).height(420).url()}
-                        alt={r.title}
-                        width={800}
-                        height={420}
-                        className="h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                        sizes="(max-width: 1024px) 50vw, 400px"
-                      />
-                    ) : (
-                      <div className="flex h-[150px] items-center justify-center rounded-md bg-gray-100 text-gray-400">
-                        No Image
-                      </div>
-                    )}
+{/* === 関連記事 === */}
+{related.length > 0 && (
+  <section className="mt-12">
+    <h2 className="mb-4 text-xl font-semibold">関連記事</h2>
+    <ul className="grid gap-6 sm:grid-cols-2">
+      {related.map((r) => (
+        <li
+          key={r._id}
+          className="group overflow-hidden rounded-xl border border-gray-200 bg-white/70 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <Link href={`/${r.slug}`} className="block">
+            {/* サムネイル */}
+            <div className="relative aspect-[16/10] overflow-hidden">
+              {hasAssetRef(r.mainImage) ? (
+                <Image
+                  src={urlFor(r.mainImage).width(800).height(500).url()}
+                  alt={r.title}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-gray-100 text-gray-400">
+                  No Image
+                </div>
+              )}
 
-                    {/* 画像左上にカテゴリーバッジ（最大2件） */}
-                    {r.categories?.length ? (
-                      <div className="pointer-events-none absolute left-2 top-2 flex gap-1">
-                        {r.categories.slice(0, 2).map((c) => (
-                          <span
-                            key={c._id}
-                            className="inline-flex items-center rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 ring-1 ring-black/5"
-                          >
-                            {c.title}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
+              {/* 画像左上にカテゴリーバッジ（最大2件） */}
+              {r.categories?.slice(0, 2).map((c) => (
+                <span
+                  key={c._id}
+                  className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 shadow"
+                >
+                  {c.title}
+                </span>
+              ))}
+            </div>
 
-                  {/* タイトル */}
-                  <h3 className="line-clamp-2 text-base font-semibold leading-snug text-gray-900">
-                    {r.title}
-                  </h3>
+            {/* タイトル・抜粋 */}
+            <div className="p-4">
+              <h3 className="line-clamp-2 text-base font-semibold leading-snug text-gray-900">
+                {r.title}
+              </h3>
 
-                  {/* 投稿日 & 抜粋 */}
-                  <div className="mt-1 text-xs text-gray-500">
-                    {r.publishedAt ? <time dateTime={r.publishedAt}>{formatDate(r.publishedAt)}</time> : null}
-                  </div>
-                  {r.excerpt ? (
-                    <p className="mt-1 line-clamp-2 text-sm text-gray-700">{r.excerpt}</p>
-                  ) : null}
+              {r.publishedAt && (
+                <time className="mt-1 block text-xs text-gray-500">
+                  {formatDate(r.publishedAt)}
+                </time>
+              )}
+
+              {r.excerpt && (
+                <p className="mt-1 line-clamp-2 text-sm text-gray-600">{r.excerpt}</p>
+              )}
+            </div>
+          </Link>
+
+          {/* カテゴリーリンク（任意で表示） */}
+          {r.categories?.length ? (
+            <div className="px-4 pb-3 flex flex-wrap gap-2">
+              {r.categories.map((c) => (
+                <Link
+                  key={c._id}
+                  href={`/category/${c.slug}`}
+                  className="text-[11px] rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-700 hover:bg-gray-100"
+                >
+                  {c.title}
                 </Link>
+              ))}
+            </div>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
 
-                {/* カテゴリーバッジリンク（任意） */}
-                {r.categories?.length ? (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {r.categories.map((c) => (
-                      <Link
-                        key={c._id}
-                        href={`/category/${c.slug}`}
-                        className="text-[11px] rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-700 hover:bg-gray-100"
-                      >
-                        {c.title}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </main>
   );
 }

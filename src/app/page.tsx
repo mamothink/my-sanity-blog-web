@@ -1,3 +1,4 @@
+// src/app/page.tsx
 import type { Image } from "sanity";
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
@@ -8,6 +9,7 @@ type Author = {
   _id: string;
   name: string;
   picture?: Image;
+  slug?: { current: string };
 };
 
 type Post = {
@@ -42,6 +44,7 @@ export default async function Page() {
                 className="rounded-xl mb-3"
               />
             )}
+
             <h2 className="text-xl font-semibold">
               <Link href={`/${post.slug.current}`}>{post.title}</Link>
             </h2>
@@ -52,11 +55,21 @@ export default async function Page() {
               </p>
             )}
 
-            {post.author?.name && (
-              <p className="text-sm text-gray-600">by {post.author.name}</p>
+            {post.author?.name && post.author.slug?.current && (
+              <p className="text-sm text-gray-600">
+                by{" "}
+                <Link
+                  href={`/author/${post.author.slug.current}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {post.author.name}
+                </Link>
+              </p>
             )}
 
-            {post.excerpt && <p className="mt-2 text-gray-700">{post.excerpt}</p>}
+            {post.excerpt && (
+              <p className="mt-2 text-gray-700">{post.excerpt}</p>
+            )}
           </li>
         ))}
       </ul>

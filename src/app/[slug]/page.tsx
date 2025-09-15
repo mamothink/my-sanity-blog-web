@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { client } from "@/lib/sanity.client";
 import { urlFor } from "@/lib/image";
 import { notFound } from "next/navigation";
@@ -10,6 +11,7 @@ type Author = {
   _id: string;
   name: string;
   picture?: Image;
+  slug?: { current: string };
 };
 
 type Post = {
@@ -49,8 +51,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
         </p>
       )}
 
-      {post.author?.name && (
-        <p className="text-sm text-gray-600">Author: {post.author.name}</p>
+      {/* 著者リンク付き表示 */}
+      {post.author?.name && post.author?.slug?.current && (
+        <p className="text-sm text-gray-600">
+          Author:{" "}
+          <Link
+            className="underline text-blue-600 hover:text-blue-800"
+            href={`/author/${post.author.slug.current}`}
+          >
+            {post.author.name}
+          </Link>
+        </p>
       )}
 
       <PortableText value={post.body ?? []} />

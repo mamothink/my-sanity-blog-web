@@ -1,9 +1,7 @@
-// @ts-nocheck
-/* eslint-disable */
-
 import Link from "next/link";
 import type { Image } from "sanity";
 import { PortableText } from "@portabletext/react";
+import type { PortableTextBlock } from "@portabletext/types";
 import { client } from "@/lib/sanity.client";
 import { urlFor } from "@/lib/image";
 import { AUTHOR_BY_SLUG_QUERY, POSTS_BY_AUTHOR_QUERY } from "@/lib/queries";
@@ -15,7 +13,7 @@ type Author = {
   name: string;
   slug: { current: string };
   picture?: SanityImageWithAlt;
-  bio?: unknown; // Portable Text を雑に許容
+  bio?: PortableTextBlock[]; // ← 正しい型
 };
 
 type Post = {
@@ -52,7 +50,6 @@ export default async function AuthorPage({ params }: { params: { slug: string } 
     <main className="max-w-2xl mx-auto p-6 space-y-8">
       <header className="flex items-center gap-4">
         {pictureUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={pictureUrl}
             alt={pictureAlt}
@@ -65,11 +62,10 @@ export default async function AuthorPage({ params }: { params: { slug: string } 
         </div>
       </header>
 
-      {/* Bio の描画 */}
-      {author.bio ? (
+      {/* Bio */}
+      {author.bio?.length ? (
         <div className="prose max-w-none">
-          {/* PortableText に any を渡す：型は上で無効化済み */}
-          <PortableText value={author.bio as any} />
+          <PortableText value={author.bio} />
         </div>
       ) : (
         <p className="text-gray-500">この著者のプロフィールは準備中です。</p>

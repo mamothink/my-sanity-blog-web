@@ -29,7 +29,11 @@ export const POST_BY_SLUG_QUERY = groq`
 
 export const AUTHOR_BY_SLUG_QUERY = groq`
   *[_type == "author" && slug.current == $slug][0]{
-    _id, name, picture, slug
+    _id,
+    name,
+    slug,
+    picture{ ..., alt },
+    bio
   }
 `;
 

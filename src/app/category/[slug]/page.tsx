@@ -18,7 +18,7 @@ type PostSummary = {
   _id: string;
   title: string;
   slug: Slug;
-  mainImage?: SanityImage;
+  mainImage?: unknown; // ← まず unknown として受けて型ガードで判定
   publishedAt?: string;
   excerpt?: string;
   author?: AuthorRef;
@@ -31,6 +31,14 @@ type CategoryPageData = {
 } | null;
 
 type Params = { slug: string };
+
+// ---- Sanity 画像の asset._ref があるかを確認する型ガード ----
+function hasAssetRef(img: unknown): img is SanityImage {
+  if (!img || typeof img !== "object") return false;
+  const rec = img as Record<string, unknown>;
+  const asset = rec["asset"] as Record<string, unknown> | undefined;
+  return typeof asset?._ref === "string";
+}
 
 // 静的生成
 export async function generateStaticParams() {
@@ -55,13 +63,10 @@ export default async function CategoryPage({ params }: { params: Params }) {
   if (!data?.category) notFound();
 
   const { category, posts = [] } = data!;
-
-  const catTitle =
-    typeof category!.slug === "string" ? category!.slug : category!.title;
+  const catTitle = typeof category!.slug === "string" ? category!.slug : category!.title;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      {/* ヘッダー帯 */}
       <section className="mb-8 rounded-2xl bg-gradient-to-br from-gray-50 to-white p-6 ring-1 ring-gray-100">
         <h1 className="text-2xl font-bold tracking-tight">{catTitle}</h1>
         {category?.description && (
@@ -72,7 +77,6 @@ export default async function CategoryPage({ params }: { params: Params }) {
 
       {!posts.length && <p>このカテゴリーにはまだ記事がありません。</p>}
 
-      {/* カード一覧 */}
       <ul className="grid gap-6 sm:grid-cols-2">
         {posts.map((post) => {
           const postSlug = typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
@@ -81,8 +85,8 @@ export default async function CategoryPage({ params }: { params: Params }) {
               key={post._id}
               className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
             >
-              {post.mainImage && (
-                <Link href={`/${postSlug}`} className="block overflow-hidden">
+              <Link href={`/${postSlug}`} className="block overflow-hidden">
+                {hasAssetRef(post.mainImage) ? (
                   <Image
                     src={urlFor(post.mainImage).width(1200).height(630).url()}
                     alt={post.title}
@@ -90,11 +94,14 @@ export default async function CategoryPage({ params }: { params: Params }) {
                     height={630}
                     className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                   />
-                </Link>
-              )}
+                ) : (
+                  <div className="aspect-[16/9] w-full rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center">
+                    No Image
+                  </div>
+                )}
+              </Link>
 
               <div className="p-5">
-                {/* カテゴリーバッジ（自分自身を含め表示） */}
                 {post.categories?.length ? (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {post.categories.map((c) => {
@@ -121,22 +128,6 @@ export default async function CategoryPage({ params }: { params: Params }) {
                 <div className="mt-1 text-xs text-gray-500">
                   {post.publishedAt &&
                     new Date(post.publishedAt).toLocaleDateString("ja-JP")}
-                  {post.author?.name && (
-                    <>
-                      {" "}
-                      · by{" "}
-                      <Link
-                        href={`/author/${
-                          typeof post.author.slug === "string"
-                            ? post.author.slug
-                            : post.author.slug?.current ?? ""
-                        }`}
-                        className="underline hover:no-underline"
-                      >
-                        {post.author.name}
-                      </Link>
-                    </>
-                  )}
                 </div>
 
                 {post.excerpt && (

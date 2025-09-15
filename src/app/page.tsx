@@ -38,24 +38,28 @@ export default async function HomePage() {
       <ul className="grid gap-6 sm:grid-cols-2">
         {posts.map((post) => {
           const postSlug = typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
+
           return (
             <li
               key={post._id}
               className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
             >
-              {/* 画像 */}
-              {post.mainImage && (
-                <Link href={`/${postSlug}`} className="block overflow-hidden">
-                  <Image
-                    src={urlFor(post.mainImage).width(1200).height(630).url()}
-                    alt={post.title}
-                    width={1200}
-                    height={630}
-                    className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                    priority
-                  />
-                </Link>
-              )}
+              {/* 画像（mainImageがある場合だけ表示） */}
+             <Link href={`/${postSlug}`} className="block overflow-hidden">
+  {post.mainImage && (post.mainImage as any).asset?._ref ? (
+    <Image
+      src={urlFor(post.mainImage).width(1200).height(630).url()}
+      alt={post.title}
+      width={1200}
+      height={630}
+      className="mb-4 rounded-xl"
+    />
+  ) : (
+    <div className="mb-4 h-[200px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">
+      No Image
+    </div>
+  )}
+</Link>
 
               <div className="p-5">
                 {/* カテゴリーバッジ */}

@@ -119,3 +119,33 @@ export const POSTS_BY_CATEGORY_SLUG_QUERY = `
     categories[]->{ _id, title, slug }
   }
 `
+/**
+ * 記事詳細＋関連記事（同じカテゴリの記事を3件まで）
+ */
+export const POST_WITH_RELATED_QUERY = `
+  *[_type == "post" && slug.current == $slug && !(_id in path('drafts.**'))][0]{
+    _id,
+    title,
+    slug,
+    mainImage,
+    body,
+    publishedAt,
+    excerpt,
+    author->{ _id, name, picture, slug },
+    categories[]->{ _id, title, slug },
+    "related": *[
+      _type == "post" &&
+      !(_id in path('drafts.**')) &&
+      count(categories[@._ref in ^.categories[]._ref]) > 0 &&
+      _id != ^._id
+    ] | order(publishedAt desc)[0...3]{
+      _id,
+      title,
+      slug,
+      mainImage,
+      publishedAt,
+      excerpt,
+      categories[]->{ _id, title, slug }
+    }
+  }
+`

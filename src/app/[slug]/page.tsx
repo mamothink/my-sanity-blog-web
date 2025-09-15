@@ -1,33 +1,61 @@
-// app/[slug]/page.tsx
+import { Metadata } from "next"
+import { notFound } from "next/navigation"
 import Link from "next/link"
 import { client } from "@/lib/sanity.client"
 import { POST_BY_SLUG_QUERY } from "@/lib/queries"
 import { urlFor } from "@/lib/image"
 
-type Params = { slug: string }
+// ===== 型定義 =====
+type SanityImage = {
+  _type: "image"
+  asset: {
+    _ref: string
+    _type: "reference"
+  }
+}
 
 type Post = {
   _id: string
   title: string
   slug: string | { current: string }
-  mainImage?: any
-  body?: any
+  mainImage?: SanityImage
   publishedAt?: string
   excerpt?: string
-  author?: { _id: string; name?: string; slug?: any }
-  categories?: { _id: string; title: string; slug: string | { current: string } }[]
+  body?: any // PortableText の型を入れたい場合は @portabletext/types を使う
+  author?: {
+    _id: string
+    name?: string
+    picture?: SanityImage
+    slug?: { current: string }
+  }
+  categories?: { _id: string; title: string; slug: { current: string } }[]
 }
 
+type Params = { slug: string }
+
+// ISR（更新から最長60秒で反映）
 export const revalidate = 60
 
-export default async function PostPage({ params }: { params: Params }) {
-  const post: Post | null = await client.fetch(POST_BY_SLUG_QUERY, {
+export async function generateMetadata({
+  params,
+}: {
+  params: Params
+}): Promise<Metadata> {
+  const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, {
     slug: params.slug,
   })
-
-  if (!post) {
-    return <div>記事が見つかりません。</div>
+  if (!post) return { title: "記事が見つかりません" }
+  return {
+    title: post.title,
+    description: post.excerpt ?? `${post.title} の記事詳細`,
   }
+}
+
+export default async function PostPage({ params }: { params: Params }) {
+  const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, {
+    slug: params.slug,
+  })
+  if (!post) return notFound()
 
   const postSlug =
     typeof post.slug === "string" ? post.slug : post.slug?.current ?? ""
@@ -39,7 +67,7 @@ export default async function PostPage({ params }: { params: Params }) {
         {post.mainImage && (
           <img
             src={urlFor(post.mainImage).width(1200).url()}
-            alt={post.title}
+            alt={post.title ?? ""}
             className="mb-6 rounded-xl"
           />
         )}
@@ -56,11 +84,12 @@ export default async function PostPage({ params }: { params: Params }) {
               {" "}
               · by{" "}
               <Link
-                href={`/author/${typeof post.author.slug === "string"
-                  ? post.author.slug
-                  : post.author.slug?.current ?? ""
-                  }`}
-                className="underline hover:no-underline"
+                href={`/author/${
+                  typeof post.author.slug === "string"
+                    ? post.author.slug
+                    : post.author.slug?.current ?? ""
+                }`}
+                className="hover:underline"
               >
                 {post.author.name}
               </Link>
@@ -68,15 +97,10 @@ export default async function PostPage({ params }: { params: Params }) {
           )}
         </div>
 
-        {/* 本文（PortableText などで表示しているなら置き換え） */}
-        {post.body && (
-          <div className="prose prose-lg">
-            {/* ここにPortableTextコンポーネントなど */}
-            {/* 例: <PortableText value={post.body} /> */}
-          </div>
-        )}
+        {/* 本文 */}
+        {post.excerpt && <p className="mb-6">{post.excerpt}</p>}
 
-        {/* ★ カテゴリーリンク追加 */}
+        {/* カテゴリーリンク */}
         {post.categories?.length ? (
           <div className="mt-6 flex flex-wrap gap-2">
             {post.categories.map((c) => {
@@ -86,7 +110,7 @@ export default async function PostPage({ params }: { params: Params }) {
                 <Link
                   key={c._id}
                   href={`/category/${cSlug}`}
-                  className="inline-flex items-center rounded-full border px-2 py-1 text-xs hover:bg-gray-100"
+                  className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200"
                 >
                   {c.title}
                 </Link>

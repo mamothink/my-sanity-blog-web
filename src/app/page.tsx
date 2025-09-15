@@ -1,23 +1,29 @@
 import type { Image } from "sanity";
+import Link from "next/link";
+import { client } from "@/lib/sanity.client";
+import { POSTS_QUERY } from "@/lib/queries";
+import { urlFor } from "@/lib/image";
+
+type Author = {
+  _id: string;
+  name: string;
+  picture?: Image;
+};
 
 type Post = {
   _id: string;
   title: string;
-  slug: { current: string }; // slugはオブジェクトのまま
+  slug: { current: string };
   mainImage?: Image;
-  publishedAt?: string; // ← ? を付ける
-  excerpt?: string;     // ← ? を付ける
+  publishedAt?: string;
+  excerpt?: string;
+  author?: Author;
 };
 
-import Link from "next/link"
-import { client } from "@/lib/sanity.client"
-import { POSTS_QUERY } from "@/lib/queries"
-import { urlFor } from "@/lib/image"
-
-export const revalidate = 60
+export const revalidate = 60;
 
 export default async function Page() {
-  const posts: Post[] = await client.fetch(POSTS_QUERY)
+  const posts: Post[] = await client.fetch(POSTS_QUERY);
 
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-6">
@@ -37,21 +43,23 @@ export default async function Page() {
               />
             )}
             <h2 className="text-xl font-semibold">
-  <Link href={`/${post.slug.current}`}>{post.title}</Link>
-</h2>
+              <Link href={`/${post.slug.current}`}>{post.title}</Link>
+            </h2>
 
-{post.publishedAt && (
-  <p className="text-sm text-gray-500 mt-1">
-    {new Date(post.publishedAt).toLocaleDateString("ja-JP")}
-  </p>
-)}
+            {post.publishedAt && (
+              <p className="text-sm text-gray-500">
+                {new Date(post.publishedAt).toLocaleDateString("ja-JP")}
+              </p>
+            )}
 
-{post.excerpt && (
-  <p className="text-gray-700 mt-2">{post.excerpt}</p>
-)}
+            {post.author?.name && (
+              <p className="text-sm text-gray-600">by {post.author.name}</p>
+            )}
+
+            {post.excerpt && <p className="mt-2 text-gray-700">{post.excerpt}</p>}
           </li>
         ))}
       </ul>
     </main>
-  )
+  );
 }

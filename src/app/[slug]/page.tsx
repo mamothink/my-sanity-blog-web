@@ -4,18 +4,16 @@ import { notFound } from "next/navigation"
 import { client } from "@/lib/sanity.client"
 import { POST_BY_SLUG_QUERY } from "@/lib/queries"
 import { urlFor } from "@/lib/image"
+import type { Metadata } from "next"
 
 export const revalidate = 60
 
-// ===== 型定義（any なし） =====
+// ===== 型定義 =====
 type Slug = string | { current: string }
 
 type SanityImage = {
   _type: "image"
-  asset: {
-    _type: "reference"
-    _ref: string
-  }
+  asset: { _type: "reference"; _ref: string }
 }
 
 type AuthorRef = {
@@ -38,12 +36,47 @@ type Post = {
   mainImage?: SanityImage
   publishedAt?: string
   excerpt?: string
-  body?: unknown // PortableText を使うなら PortableTextBlock[] などに変更可
+  body?: unknown
   author?: AuthorRef
   categories?: CategoryRef[]
 }
 
 type Params = { slug: string }
+
+// --- ★ OGP/SEO用 ---
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, { slug: params.slug })
+  if (!post) return { title: "記事が見つかりません" }
+
+  const slug = typeof post.slug === "string" ? post.slug : post.slug?.current ?? ""
+  const ogImage = post.mainImage
+    ? urlFor(post.mainImage).width(1200).height(630).url()
+    : "https://your-site.com/default-og.png"
+
+  return {
+    title: post.title,
+    description: post.excerpt ?? `${post.title} の記事詳細`,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt ?? "",
+      url: `https://your-site.com/${slug}`,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt ?? "",
+      images: [ogImage],
+    },
+  }
+}
 
 export default async function PostPage({ params }: { params: Params }) {
   const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, {
@@ -92,7 +125,7 @@ export default async function PostPage({ params }: { params: Params }) {
           )}
         </div>
 
-        {/* 抜粋（本文を描画しているなら差し替え） */}
+        {/* 抜粋 */}
         {post.excerpt && <p className="mb-6">{post.excerpt}</p>}
 
         {/* カテゴリーリンク */}
@@ -113,9 +146,6 @@ export default async function PostPage({ params }: { params: Params }) {
             })}
           </div>
         ) : null}
-
-        {/* 記事スラッグ（デバッグ用に一時的に表示したい場合）
-        <pre className="mt-4 text-xs text-gray-400">{postSlug}</pre> */}
       </article>
     </main>
   )

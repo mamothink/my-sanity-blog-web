@@ -16,12 +16,21 @@ type Post = {
   _id: string;
   title: string;
   slug: Slug;
-  mainImage?: SanityImage;
+  mainImage?: unknown; // ← まずは unknown として受け取り、下の型ガードで判定
   publishedAt?: string;
   excerpt?: string;
   author?: AuthorRef;
   categories?: CategoryRef[];
 };
+
+// ---- 画像が Sanity の参照を持っているか判定する型ガード（any 不使用） ----
+function hasAssetRef(img: unknown): img is SanityImage {
+  if (!img || typeof img !== "object") return false;
+  const rec = img as Record<string, unknown>;
+  const asset = rec["asset"] as Record<string, unknown> | undefined;
+  const ref = asset && typeof asset["_ref"] === "string";
+  return !!ref;
+}
 
 export default async function HomePage() {
   const posts = await client.fetch<Post[]>(POSTS_QUERY);
@@ -37,36 +46,38 @@ export default async function HomePage() {
 
       <ul className="grid gap-6 sm:grid-cols-2">
         {posts.map((post) => {
-          const postSlug = typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
+          const postSlug =
+            typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
 
           return (
             <li
               key={post._id}
               className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
             >
-              {/* 画像（mainImageがある場合だけ表示） */}
-             <Link href={`/${postSlug}`} className="block overflow-hidden">
-  {post.mainImage && (post.mainImage as any).asset?._ref ? (
-    <Image
-      src={urlFor(post.mainImage).width(1200).height(630).url()}
-      alt={post.title}
-      width={1200}
-      height={630}
-      className="mb-4 rounded-xl"
-    />
-  ) : (
-    <div className="mb-4 h-[200px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">
-      No Image
-    </div>
-  )}
-</Link>
+              {/* 画像（asset._ref があるときだけ表示） */}
+              <Link href={`/${postSlug}`} className="block overflow-hidden">
+                {hasAssetRef(post.mainImage) ? (
+                  <Image
+                    src={urlFor(post.mainImage).width(1200).height(630).url()}
+                    alt={post.title}
+                    width={1200}
+                    height={630}
+                    className="mb-4 rounded-xl"
+                  />
+                ) : (
+                  <div className="mb-4 h-[200px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">
+                    No Image
+                  </div>
+                )}
+              </Link>
 
               <div className="p-5">
                 {/* カテゴリーバッジ */}
                 {post.categories?.length ? (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {post.categories.map((c) => {
-                      const cSlug = typeof c.slug === "string" ? c.slug : c.slug?.current ?? "";
+                      const cSlug =
+                        typeof c.slug === "string" ? c.slug : c.slug?.current ?? "";
                       return (
                         <Link
                           key={c._id}
@@ -111,7 +122,9 @@ export default async function HomePage() {
 
                 {/* 抜粋 */}
                 {post.excerpt && (
-                  <p className="mt-3 line-clamp-3 text-sm text-gray-700">{post.excerpt}</p>
+                  <p className="mt-3 line-clamp-3 text-sm text-gray-700">
+                    {post.excerpt}
+                  </p>
                 )}
               </div>
             </li>

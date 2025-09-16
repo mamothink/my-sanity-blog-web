@@ -49,9 +49,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const post = await client.fetch<Post | null>(POST_BY_SLUG_QUERY, { slug: params.slug });
   if (!post) return { title: "記事が見つかりません" };
 
-  const ogImage = hasAssetRef(post.mainImage)
-    ? urlFor(post.mainImage).width(1200).height(630).url()
-    : "https://your-site.com/default-og.png";
+const ogImage = hasAssetRef(post.mainImage)
+  ? urlFor(post.mainImage).width(1200).height(630).url()
+  : "/default-og.png"; // ← public/default-og.png を使う
 
   return {
     title: post.title,

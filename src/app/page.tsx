@@ -1,39 +1,30 @@
 import Link from "next/link";
-import Image from "next/image";
 import { client } from "@/lib/sanity.client";
-import { POSTS_QUERY } from "@/lib/queries";
-import { urlFor } from "@/lib/image";
+import { POSTS_PAGE_QUERY } from "@/lib/queries";
+import PostCard, { type PostLike } from "@/components/PostCard";
 
 export const revalidate = 60;
 
-// 型
-type Slug = string | { current: string };
-type SanityImage = { _type: "image"; asset: { _type: "reference"; _ref: string } };
-type AuthorRef = { _id: string; name?: string; slug?: Slug };
-type CategoryRef = { _id: string; title: string; slug: Slug };
-
-type Post = {
-  _id: string;
-  title: string;
-  slug: Slug;
-  mainImage?: unknown; // ← まずは unknown として受け取り、下の型ガードで判定
-  publishedAt?: string;
-  excerpt?: string;
-  author?: AuthorRef;
-  categories?: CategoryRef[];
+type PageData = {
+  total: number;
+  items: PostLike[];
 };
 
-// ---- 画像が Sanity の参照を持っているか判定する型ガード（any 不使用） ----
-function hasAssetRef(img: unknown): img is SanityImage {
-  if (!img || typeof img !== "object") return false;
-  const rec = img as Record<string, unknown>;
-  const asset = rec["asset"] as Record<string, unknown> | undefined;
-  const ref = asset && typeof asset["_ref"] === "string";
-  return !!ref;
-}
+const PER_PAGE = 8;
 
-export default async function HomePage() {
-  const posts = await client.fetch<Post[]>(POSTS_QUERY);
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: { page?: string };
+}) {
+  const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10) || 1);
+  const start = (page - 1) * PER_PAGE;
+  const end = start + PER_PAGE;
+
+  const data = await client.fetch<PageData>(POSTS_PAGE_QUERY, { start, end });
+  const posts = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
@@ -42,73 +33,51 @@ export default async function HomePage() {
         <p className="mt-2 text-sm text-gray-600">最近の投稿</p>
       </header>
 
-      {!posts?.length && <p>まだ記事がありません。</p>}
+      {!posts.length && <p>まだ記事がありません。</p>}
 
-<ul className="grid gap-6 sm:grid-cols-2">
-  {posts.map((post) => {
-    const postSlug = typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
-    return (
-      <li
-        key={post._id}
-        className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
-      >
-        <Link href={`/${postSlug}`} className="block overflow-hidden">
-          {hasAssetRef(post.mainImage) ? (
-            <Image
-              src={urlFor(post.mainImage).width(1200).height(630).url()}
-              alt={post.title}
-              width={1200}
-              height={630}
-              className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-            />
-          ) : (
-            <div className="aspect-[16/9] w-full rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center">
-              No Image
-            </div>
-          )}
-        </Link>
+      {posts.length > 0 && (
+        <ul className="grid gap-6 sm:grid-cols-2">
+          {posts.map((post) => (
+            <PostCard key={post._id} post={post} showExcerpt showCategories />
+          ))}
+        </ul>
+      )}
 
-        <div className="p-5">
-          {/* カテゴリーバッジ */}
-          {post.categories?.length ? (
-            <div className="mb-3 flex flex-wrap gap-2">
-              {post.categories.map((c) => {
-                const cSlug = typeof c.slug === "string" ? c.slug : c.slug?.current ?? "";
-                return (
-                  <Link
-                    key={c._id}
-                    href={`/category/${cSlug}`}
-                    className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
-                  >
-                    {c.title}
-                  </Link>
-                );
-              })}
-            </div>
-          ) : null}
+      {/* ページネーション */}
+      {totalPages > 1 && (
+        <nav className="mt-10 flex items-center justify-center gap-3 text-sm">
+          {/* Prev */}
+          <Link
+            href={page > 1 ? `/?page=${page - 1}` : "#"}
+            aria-disabled={page <= 1}
+            className={`rounded-full border px-3 py-1.5 ${
+              page <= 1
+                ? "pointer-events-none border-neutral-200 text-neutral-300"
+                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+            }`}
+          >
+            ← 前へ
+          </Link>
 
-          {/* タイトル */}
-          <h2 className="text-lg font-semibold">
-            <Link href={`/${postSlug}`} className="hover:underline">
-              {post.title}
-            </Link>
-          </h2>
+          {/* Page indicator */}
+          <span className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-neutral-700">
+            {page} / {totalPages}
+          </span>
 
-          {/* 投稿日 */}
-          <div className="mt-1 text-xs text-gray-500">
-            {post.publishedAt && new Date(post.publishedAt).toLocaleDateString("ja-JP")}
-          </div>
-
-          {/* 抜粋 */}
-          {post.excerpt && (
-            <p className="mt-3 line-clamp-3 text-sm text-gray-700">{post.excerpt}</p>
-          )}
-        </div>
-      </li>
-    );
-  })}
-</ul>
-
+          {/* Next */}
+          <Link
+            href={page < totalPages ? `/?page=${page + 1}` : "#"}
+            aria-disabled={page >= totalPages}
+            className={`rounded-full border px-3 py-1.5 ${
+              page >= totalPages
+                ? "pointer-events-none border-neutral-200 text-neutral-300"
+                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+            }`}
+          >
+            次へ →
+          </Link>
+        </nav>
+      )}
     </main>
   );
 }

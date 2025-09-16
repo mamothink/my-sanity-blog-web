@@ -1,36 +1,39 @@
 import Link from "next/link";
-import type { Image } from "sanity";
+import NextImage from "next/image"; // ← 名前衝突を避けるため alias
+import type { Image as SanityImage } from "sanity";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import { client } from "@/lib/sanity.client";
 import { urlFor } from "@/lib/image";
 import { AUTHOR_BY_SLUG_QUERY, POSTS_BY_AUTHOR_QUERY } from "@/lib/queries";
 
-type SanityImageWithAlt = Image & { alt?: string };
+type SanityImageWithAlt = SanityImage & { alt?: string };
 
 type Author = {
   _id: string;
   name: string;
   slug: { current: string };
   picture?: SanityImageWithAlt;
-  bio?: PortableTextBlock[]; // ← 正しい型
+  bio?: PortableTextBlock[];
 };
 
 type Post = {
   _id: string;
   title: string;
   slug: { current: string };
-  mainImage?: Image;
+  mainImage?: SanityImage;
   publishedAt?: string;
   excerpt?: string;
   author?: Author;
 };
 
+export const revalidate = 60;
+
 export default async function AuthorPage({ params }: { params: { slug: string } }) {
   const author: Author | null = await client.fetch(AUTHOR_BY_SLUG_QUERY, { slug: params.slug });
   if (!author) {
     return (
-      <main className="max-w-2xl mx-auto p-6">
+      <main className="mx-auto max-w-2xl p-6">
         <h1 className="text-2xl font-bold">Author not found</h1>
         <p className="mt-4">
           <Link className="text-blue-600 underline" href="/">Back to home</Link>
@@ -47,13 +50,16 @@ export default async function AuthorPage({ params }: { params: { slug: string } 
   const pictureAlt = author.picture?.alt || `${author.name} portrait`;
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-8">
+    <main className="mx-auto max-w-2xl p-6 space-y-8">
       <header className="flex items-center gap-4">
         {pictureUrl && (
-          <img
+          <NextImage
             src={pictureUrl}
             alt={pictureAlt}
-            className="rounded-full w-20 h-20 object-cover"
+            width={80}
+            height={80}
+            className="h-20 w-20 rounded-full object-cover"
+            priority
           />
         )}
         <div>
@@ -77,9 +83,11 @@ export default async function AuthorPage({ params }: { params: { slug: string } 
       ) : (
         <ul className="space-y-6">
           {posts.map((post) => (
-            <li key={post._id} className="border rounded-2xl p-4">
+            <li key={post._id} className="rounded-2xl border p-4">
               <h2 className="text-xl font-semibold">
-                <Link href={`/${post.slug.current}`}>{post.title}</Link>
+                <Link href={`/${post.slug.current}`} className="hover:underline">
+                  {post.title}
+                </Link>
               </h2>
               {post.publishedAt && (
                 <p className="text-sm text-gray-500">

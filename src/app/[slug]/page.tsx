@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { client } from "@/lib/sanity.client";
 import { POST_BY_SLUG_QUERY, RELATED_POSTS_QUERY } from "@/lib/queries";
 import { urlFor } from "@/lib/image";
+import PostCard from "@/components/PostCard";
 
 export const revalidate = 60;
 
@@ -44,6 +45,25 @@ function formatDate(iso?: string) {
   if (!iso) return "";
   const d = new Date(iso);
   return d.toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" });
+}
+
+// 共有ユーティリティ（関連記事の key 生成に使用）
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+function toSlugLocal(slug: unknown): string {
+  if (typeof slug === "string") return slug;
+  if (isRecord(slug)) {
+    const cur = slug["current"];
+    if (typeof cur === "string") return cur;
+  }
+  return "";
+}
+function getKey(post: Record<string, unknown>, idx: number): string {
+  const idVal = post["_id"];
+  const id = typeof idVal === "string" || typeof idVal === "number" ? String(idVal) : null;
+  const slug = toSlugLocal(post["slug"]);
+  return String(id ?? slug ?? idx);
 }
 
 // ===== OGP / SEO =====
@@ -84,13 +104,16 @@ export default async function PostPage({ params }: { params: Params }) {
 
   // 関連記事（同じカテゴリ、本人除外）
   const categoryIds = post.categories?.map((c) => c._id).filter(Boolean) ?? [];
-  const related: Post[] =
+  const relatedRaw =
     categoryIds.length > 0
-      ? await client.fetch<Post[]>(RELATED_POSTS_QUERY, {
+      ? await client.fetch<unknown[]>(RELATED_POSTS_QUERY, {
           categoryIds,
           currentPostId: post._id,
         })
       : [];
+
+  // PostCard は Record<string, unknown> を受け付けるため、実行時チェックを兼ねて型を緩める
+  const related = relatedRaw.filter(isRecord) as Record<string, unknown>[];
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -145,70 +168,15 @@ export default async function PostPage({ params }: { params: Params }) {
         ) : null}
       </article>
 
-      {/* === 関連記事 === */}
+      {/* === 関連記事（PostCard で統一） === */}
       {related.length > 0 && (
         <section className="mt-12">
           <h2 className="mb-4 text-xl font-semibold">関連記事</h2>
-          <ul className="grid gap-6 sm:grid-cols-2">
-            {related.map((r) => (
-              <li
-                key={r._id}
-                className="group overflow-hidden rounded-xl border border-gray-200 bg-white/70 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-              >
-                <Link href={`/${toSlug(r.slug)}`} className="block">
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    {hasAssetRef(r.mainImage) ? (
-                      <Image
-                        src={urlFor(r.mainImage).width(800).height(500).url()}
-                        alt={r.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center bg-gray-100 text-gray-400">
-                        No Image
-                      </div>
-                    )}
-                    {r.categories?.slice(0, 2).map((c) => (
-                      <span
-                        key={c._id}
-                        className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 shadow"
-                      >
-                        {c.title}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="line-clamp-2 text-base font-semibold leading-snug text-gray-900">
-                      {r.title}
-                    </h3>
-
-                    {r.publishedAt && (
-                      <time className="mt-1 block text-xs text-gray-500">{formatDate(r.publishedAt)}</time>
-                    )}
-
-                    {r.excerpt && <p className="mt-1 line-clamp-2 text-sm text-gray-600">{r.excerpt}</p>}
-                  </div>
-                </Link>
-
-                {r.categories?.length ? (
-                  <div className="flex flex-wrap gap-2 px-4 pb-3">
-                    {r.categories.map((c) => (
-                      <Link
-                        key={c._id}
-                        href={`/category/${toSlug(c.slug)}`}
-                        className="text-[11px] rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-700 hover:bg-gray-100"
-                      >
-                        {c.title}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {related.map((r, idx) => (
+              <PostCard key={getKey(r, idx)} post={r} />
             ))}
-          </ul>
+          </div>
         </section>
       )}
     </main>

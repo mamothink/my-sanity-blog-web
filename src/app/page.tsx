@@ -44,93 +44,71 @@ export default async function HomePage() {
 
       {!posts?.length && <p>まだ記事がありません。</p>}
 
-      <ul className="grid gap-6 sm:grid-cols-2">
-        {posts.map((post) => {
-          const postSlug =
-            typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
+<ul className="grid gap-6 sm:grid-cols-2">
+  {posts.map((post) => {
+    const postSlug = typeof post.slug === "string" ? post.slug : post.slug?.current ?? "";
+    return (
+      <li
+        key={post._id}
+        className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
+      >
+        <Link href={`/${postSlug}`} className="block overflow-hidden">
+          {hasAssetRef(post.mainImage) ? (
+            <Image
+              src={urlFor(post.mainImage).width(1200).height(630).url()}
+              alt={post.title}
+              width={1200}
+              height={630}
+              className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+            />
+          ) : (
+            <div className="aspect-[16/9] w-full rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center">
+              No Image
+            </div>
+          )}
+        </Link>
 
-          return (
-            <li
-              key={post._id}
-              className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
-            >
-              {/* 画像（asset._ref があるときだけ表示） */}
-              <Link href={`/${postSlug}`} className="block overflow-hidden">
-                {hasAssetRef(post.mainImage) ? (
-                  <Image
-                    src={urlFor(post.mainImage).width(1200).height(630).url()}
-                    alt={post.title}
-                    width={1200}
-                    height={630}
-                    className="mb-4 rounded-xl"
-                  />
-                ) : (
-                  <div className="mb-4 h-[200px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">
-                    No Image
-                  </div>
-                )}
-              </Link>
-
-              <div className="p-5">
-                {/* カテゴリーバッジ */}
-                {post.categories?.length ? (
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    {post.categories.map((c) => {
-                      const cSlug =
-                        typeof c.slug === "string" ? c.slug : c.slug?.current ?? "";
-                      return (
-                        <Link
-                          key={c._id}
-                          href={`/category/${cSlug}`}
-                          className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
-                        >
-                          {c.title}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : null}
-
-                {/* タイトル */}
-                <h2 className="text-xl font-semibold leading-snug">
-                  <Link href={`/${postSlug}`} className="hover:underline">
-                    {post.title}
+        <div className="p-5">
+          {/* カテゴリーバッジ */}
+          {post.categories?.length ? (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {post.categories.map((c) => {
+                const cSlug = typeof c.slug === "string" ? c.slug : c.slug?.current ?? "";
+                return (
+                  <Link
+                    key={c._id}
+                    href={`/category/${cSlug}`}
+                    className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    {c.title}
                   </Link>
-                </h2>
+                );
+              })}
+            </div>
+          ) : null}
 
-                {/* メタ */}
-                <div className="mt-1 text-xs text-gray-500">
-                  {post.publishedAt &&
-                    new Date(post.publishedAt).toLocaleDateString("ja-JP")}
-                  {post.author?.name && (
-                    <>
-                      {" "}
-                      · by{" "}
-                      <Link
-                        href={`/author/${
-                          typeof post.author.slug === "string"
-                            ? post.author.slug
-                            : post.author.slug?.current ?? ""
-                        }`}
-                        className="underline hover:no-underline"
-                      >
-                        {post.author.name}
-                      </Link>
-                    </>
-                  )}
-                </div>
+          {/* タイトル */}
+          <h2 className="text-lg font-semibold">
+            <Link href={`/${postSlug}`} className="hover:underline">
+              {post.title}
+            </Link>
+          </h2>
 
-                {/* 抜粋 */}
-                {post.excerpt && (
-                  <p className="mt-3 line-clamp-3 text-sm text-gray-700">
-                    {post.excerpt}
-                  </p>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+          {/* 投稿日 */}
+          <div className="mt-1 text-xs text-gray-500">
+            {post.publishedAt && new Date(post.publishedAt).toLocaleDateString("ja-JP")}
+          </div>
+
+          {/* 抜粋 */}
+          {post.excerpt && (
+            <p className="mt-3 line-clamp-3 text-sm text-gray-700">{post.excerpt}</p>
+          )}
+        </div>
+      </li>
+    );
+  })}
+</ul>
+
     </main>
   );
 }

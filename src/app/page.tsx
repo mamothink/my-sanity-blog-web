@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
 import { POSTS_PAGE_QUERY } from "@/lib/queries";
-import PostCard, { type PostLike } from "@/components/PostCard";
+import PostCard from "@/components/PostCard";
 
 export const revalidate = 60;
 
 type PageData = {
   total: number;
-  items: PostLike[];
+  items: any[]; // PostCard 側に依存しないため、ここでは緩めに
 };
 
 const PER_PAGE = 8;
@@ -36,11 +36,16 @@ export default async function HomePage({
       {!posts.length && <p>まだ記事がありません。</p>}
 
       {posts.length > 0 && (
-        <ul className="grid gap-6 sm:grid-cols-2">
-          {posts.map((post) => (
-            <PostCard key={post._id} post={post} showExcerpt showCategories />
-          ))}
-        </ul>
+        <div className="grid gap-6 sm:grid-cols-2">
+          {posts.map((post, idx) => {
+            const slug =
+              typeof post?.slug === "string"
+                ? post.slug
+                : post?.slug?.current ?? String(idx);
+            const key = String(post?._id ?? slug ?? idx);
+            return <PostCard key={key} post={post} />;
+          })}
+        </div>
       )}
 
       {/* ページネーション */}

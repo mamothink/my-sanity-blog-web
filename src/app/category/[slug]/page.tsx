@@ -1,28 +1,39 @@
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
-import { CATEGORY_WITH_POSTS_QUERY } from "@/lib/queries"; // ← 未使用だった ALL_CATEGORY_SLUGS_QUERY を削除
-import PostCard, { type PostCardProps } from "@/components/PostCard";
+import { CATEGORY_WITH_POSTS_QUERY } from "@/lib/queries";
+import PostCard from "@/components/PostCard";
 
 export const revalidate = 60;
 
+/** PostCard に合わせ、受け取りは緩い型でOK（anyは使わない） */
+type Slug = string | { current?: string } | null | undefined;
+type PostLike = {
+  _id?: string | number | null;
+  slug?: Slug;
+  [key: string]: unknown;
+};
+
 type CategoryPageData = {
   title?: string | null;
-  items?: PostCardProps["post"][];
-  posts?: PostCardProps["post"][];
+  items?: PostLike[];
+  posts?: PostLike[];
   total?: number;
 };
 
 const PER_PAGE = 8;
 
-function toSlugLocal(slug: PostCardProps["post"]["slug"]): string {
+/* ユーティリティ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+function toSlugLocal(slug: Slug): string {
   if (!slug) return "";
   if (typeof slug === "string") return slug;
   return slug.current ?? "";
 }
-
-function getKey(post: PostCardProps["post"], idx: number): string {
-  const id = (post as { _id?: string | number | null | undefined })?._id;
-  const slug = toSlugLocal(post.slug);
+function getKey(post: PostLike, idx: number): string {
+  const id = post?._id;
+  const slug = toSlugLocal(post?.slug ?? "");
   return String(id ?? slug ?? idx);
 }
 
@@ -31,11 +42,15 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams?: { page?: string };
+  // Next.js 15: searchParams は Promise を await
+  searchParams?: Promise<{ page?: string }>;
 }) {
   const { slug } = params;
 
-  const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10) || 1);
+  const sp = (await searchParams) ?? {};
+  const pageNum = Number.parseInt(sp.page ?? "1", 10);
+  const page = Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1;
+
   const start = (page - 1) * PER_PAGE;
   const end = start + PER_PAGE;
 
@@ -45,7 +60,7 @@ export default async function CategoryPage({
     end,
   });
 
-  const posts = data.items ?? data.posts ?? [];
+  const posts = (data.items ?? data.posts ?? []) as PostLike[];
   const total = typeof data.total === "number" ? data.total : posts.length;
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
   const title = data.title ?? slug;

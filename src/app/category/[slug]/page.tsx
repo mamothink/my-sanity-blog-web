@@ -1,19 +1,30 @@
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
-import { ALL_CATEGORY_SLUGS_QUERY, CATEGORY_WITH_POSTS_QUERY } from "@/lib/queries";
+import { CATEGORY_WITH_POSTS_QUERY } from "@/lib/queries"; // ← 未使用だった ALL_CATEGORY_SLUGS_QUERY を削除
 import PostCard, { type PostCardProps } from "@/components/PostCard";
 
 export const revalidate = 60;
 
 type CategoryPageData = {
   title?: string | null;
-  // プロジェクトごとの差異を吸収：items または posts のどちらでもOKに
   items?: PostCardProps["post"][];
   posts?: PostCardProps["post"][];
   total?: number;
 };
 
 const PER_PAGE = 8;
+
+function toSlugLocal(slug: PostCardProps["post"]["slug"]): string {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current ?? "";
+}
+
+function getKey(post: PostCardProps["post"], idx: number): string {
+  const id = (post as { _id?: string | number | null | undefined })?._id;
+  const slug = toSlugLocal(post.slug);
+  return String(id ?? slug ?? idx);
+}
 
 export default async function CategoryPage({
   params,
@@ -35,7 +46,7 @@ export default async function CategoryPage({
   });
 
   const posts = data.items ?? data.posts ?? [];
-  const total = typeof data.total === "number" ? data.total : posts.length; // totalが無ければ暫定
+  const total = typeof data.total === "number" ? data.total : posts.length;
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
   const title = data.title ?? slug;
 
@@ -50,12 +61,9 @@ export default async function CategoryPage({
 
       {posts.length > 0 && (
         <div className="grid gap-6 sm:grid-cols-2">
-          {posts.map((post, idx) => {
-            const slugNorm =
-              typeof post?.slug === "string" ? post.slug : post?.slug?.current ?? String(idx);
-            const key = String((post as { _id?: string })?._id ?? slugNorm ?? idx);
-            return <PostCard key={key} post={post} />;
-          })}
+          {posts.map((post, idx) => (
+            <PostCard key={getKey(post, idx)} post={post} />
+          ))}
         </div>
       )}
 

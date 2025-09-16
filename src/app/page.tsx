@@ -1,16 +1,28 @@
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
 import { POSTS_PAGE_QUERY } from "@/lib/queries";
-import PostCard from "@/components/PostCard";
+import PostCard, { type PostCardProps } from "@/components/PostCard";
 
 export const revalidate = 60;
 
 type PageData = {
   total: number;
-  items: any[]; // PostCard 側に依存しないため、ここでは緩めに
+  items: PostCardProps["post"][]; // ← any禁止：PostCardのpost型を再利用
 };
 
 const PER_PAGE = 8;
+
+function toSlugLocal(slug: PostCardProps["post"]["slug"]): string {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current ?? "";
+}
+
+function getKey(post: PostCardProps["post"], idx: number): string {
+  const id = (post as { _id?: string | number | null | undefined })?._id;
+  const slug = toSlugLocal(post.slug);
+  return String(id ?? slug ?? idx);
+}
 
 export default async function HomePage({
   searchParams,
@@ -37,14 +49,9 @@ export default async function HomePage({
 
       {posts.length > 0 && (
         <div className="grid gap-6 sm:grid-cols-2">
-          {posts.map((post, idx) => {
-            const slug =
-              typeof post?.slug === "string"
-                ? post.slug
-                : post?.slug?.current ?? String(idx);
-            const key = String(post?._id ?? slug ?? idx);
-            return <PostCard key={key} post={post} />;
-          })}
+          {posts.map((post, idx) => (
+            <PostCard key={getKey(post, idx)} post={post} />
+          ))}
         </div>
       )}
 

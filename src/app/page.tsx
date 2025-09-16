@@ -1,35 +1,52 @@
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
 import { POSTS_PAGE_QUERY } from "@/lib/queries";
-import PostCard, { type PostCardProps } from "@/components/PostCard";
+import PostCard from "@/components/PostCard";
 
 export const revalidate = 60;
 
 type PageData = {
   total: number;
-  items: PostCardProps["post"][]; // ← any禁止：PostCardのpost型を再利用
+  items: Record<string, unknown>[];
 };
 
 const PER_PAGE = 8;
 
-function toSlugLocal(slug: PostCardProps["post"]["slug"]): string {
-  if (!slug) return "";
-  if (typeof slug === "string") return slug;
-  return slug.current ?? "";
+/* 安全にオブジェクト判定 */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
 }
 
-function getKey(post: PostCardProps["post"], idx: number): string {
-  const id = (post as { _id?: string | number | null | undefined })?._id;
-  const slug = toSlugLocal(post.slug);
+/* slug を安全に取り出す（string or {current} どちらでもOK） */
+function toSlugLocal(slug: unknown): string {
+  if (typeof slug === "string") return slug;
+  if (isRecord(slug)) {
+    const cur = slug["current"];
+    if (typeof cur === "string") return cur;
+  }
+  return "";
+}
+
+/* key 生成（_id → slug → idx の順でフォールバック） */
+function getKey(post: Record<string, unknown>, idx: number): string {
+  const id =
+    isRecord(post) && (typeof post["_id"] === "string" || typeof post["_id"] === "number")
+      ? String(post["_id"])
+      : null;
+  const slug = isRecord(post) ? toSlugLocal(post["slug"]) : "";
   return String(id ?? slug ?? idx);
 }
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams?: { page?: string };
+  // Next.js 15 では searchParams は Promise として受け取って await が必要
+  searchParams?: Promise<{ page?: string }>;
 }) {
-  const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10) || 1);
+  const sp = (await searchParams) ?? {};
+  const pageNum = Number.parseInt(sp.page ?? "1", 10);
+  const page = Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1;
+
   const start = (page - 1) * PER_PAGE;
   const end = start + PER_PAGE;
 

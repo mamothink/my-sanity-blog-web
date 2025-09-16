@@ -1,73 +1,99 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-
+import Link from "next/link";
 import { client } from "@/lib/sanity.client";
 import { ALL_CATEGORY_SLUGS_QUERY, CATEGORY_WITH_POSTS_QUERY } from "@/lib/queries";
-import PostCard, { type PostLike } from "@/components/PostCard";
+import PostCard, { type PostCardProps } from "@/components/PostCard";
 
 export const revalidate = 60;
 
-// 型
-type Slug = string | { current: string };
-type SanityImage = { _type: "image"; asset: { _type: "reference"; _ref: string } };
-type AuthorRef = { _id: string; name?: string; slug?: Slug; picture?: SanityImage };
-
-type PostSummary = PostLike & {
-  author?: AuthorRef;
+type CategoryPageData = {
+  title?: string | null;
+  // プロジェクトごとの差異を吸収：items または posts のどちらでもOKに
+  items?: PostCardProps["post"][];
+  posts?: PostCardProps["post"][];
+  total?: number;
 };
 
-type CategoryPageData = {
-  category?: { _id: string; title: string; description?: string; slug: Slug };
-  posts?: PostSummary[];
-} | null;
+const PER_PAGE = 8;
 
-type Params = { slug: string };
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams?: { page?: string };
+}) {
+  const { slug } = params;
 
-// helpers
-function toSlug(s?: Slug) {
-  return typeof s === "string" ? s : s?.current ?? "";
-}
+  const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10) || 1);
+  const start = (page - 1) * PER_PAGE;
+  const end = start + PER_PAGE;
 
-// 静的生成
-export async function generateStaticParams() {
-  const slugs = await client.fetch<{ slug: string }[]>(ALL_CATEGORY_SLUGS_QUERY);
-  return slugs.map(({ slug }) => ({ slug }));
-}
+  const data = await client.fetch<CategoryPageData>(CATEGORY_WITH_POSTS_QUERY, {
+    slug,
+    start,
+    end,
+  });
 
-// SEO
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const data = await client.fetch<CategoryPageData>(CATEGORY_WITH_POSTS_QUERY, { slug: params.slug });
-  if (!data?.category) return { title: "Category not found" };
-  const cat = data.category;
-  return {
-    title: `${cat.title || toSlug(cat.slug)} – Category`,
-    description: cat.description || `${cat.title || toSlug(cat.slug)} に属する記事一覧`,
-  };
-}
-
-export default async function CategoryPage({ params }: { params: Params }) {
-  const data = await client.fetch<CategoryPageData>(CATEGORY_WITH_POSTS_QUERY, { slug: params.slug });
-  if (!data?.category) notFound();
-
-  const { category, posts = [] } = data!;
+  const posts = data.items ?? data.posts ?? [];
+  const total = typeof data.total === "number" ? data.total : posts.length; // totalが無ければ暫定
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+  const title = data.title ?? slug;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      <section className="mb-8 rounded-2xl bg-gradient-to-br from-gray-50 to-white p-6 ring-1 ring-gray-100">
-        <h1 className="text-2xl font-bold tracking-tight">{category!.title || toSlug(category!.slug)}</h1>
-        {category?.description && (
-          <p className="mt-2 text-sm text-gray-600">{category.description}</p>
-        )}
-        <p className="mt-1 text-xs text-gray-500">{posts.length} 件</p>
-      </section>
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">カテゴリ：{title}</h1>
+        <p className="mt-2 text-sm text-gray-600">このカテゴリの投稿一覧</p>
+      </header>
 
-      {!posts.length && <p>このカテゴリーにはまだ記事がありません。</p>}
+      {!posts.length && <p>まだ記事がありません。</p>}
 
-      <ul className="grid gap-6 sm:grid-cols-2">
-        {posts.map((post) => (
-          <PostCard key={post._id} post={post} showExcerpt showCategories />
-        ))}
-      </ul>
+      {posts.length > 0 && (
+        <div className="grid gap-6 sm:grid-cols-2">
+          {posts.map((post, idx) => {
+            const slugNorm =
+              typeof post?.slug === "string" ? post.slug : post?.slug?.current ?? String(idx);
+            const key = String((post as { _id?: string })?._id ?? slugNorm ?? idx);
+            return <PostCard key={key} post={post} />;
+          })}
+        </div>
+      )}
+
+      {/* ページネーション */}
+      {totalPages > 1 && (
+        <nav className="mt-10 flex items-center justify-center gap-3 text-sm">
+          {/* Prev */}
+          <Link
+            href={page > 1 ? `/category/${slug}?page=${page - 1}` : "#"}
+            aria-disabled={page <= 1}
+            className={`rounded-full border px-3 py-1.5 ${
+              page <= 1
+                ? "pointer-events-none border-neutral-200 text-neutral-300"
+                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+            }`}
+          >
+            ← 前へ
+          </Link>
+
+          {/* Page indicator */}
+          <span className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-neutral-700">
+            {page} / {totalPages}
+          </span>
+
+          {/* Next */}
+          <Link
+            href={page < totalPages ? `/category/${slug}?page=${page + 1}` : "#"}
+            aria-disabled={page >= totalPages}
+            className={`rounded-full border px-3 py-1.5 ${
+              page >= totalPages
+                ? "pointer-events-none border-neutral-200 text-neutral-300"
+                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+            }`}
+          >
+            次へ →
+          </Link>
+        </nav>
+      )}
     </main>
   );
 }

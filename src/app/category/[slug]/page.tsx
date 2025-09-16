@@ -5,35 +5,28 @@ import PostCard from "@/components/PostCard";
 
 export const revalidate = 60;
 
-/** PostCard に合わせ、受け取りは緩い型でOK（anyは使わない） */
 type Slug = string | { current?: string } | null | undefined;
-type PostLike = {
-  _id?: string | number | null;
-  slug?: Slug;
-  [key: string]: unknown;
-};
+type CatPost = Record<string, unknown>;
 
 type CategoryPageData = {
   title?: string | null;
-  items?: PostLike[];
-  posts?: PostLike[];
+  items?: CatPost[];
+  posts?: CatPost[];
   total?: number;
 };
 
 const PER_PAGE = 8;
 
-/* ユーティリティ */
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null;
-}
 function toSlugLocal(slug: Slug): string {
   if (!slug) return "";
   if (typeof slug === "string") return slug;
   return slug.current ?? "";
 }
-function getKey(post: PostLike, idx: number): string {
-  const id = post?._id;
-  const slug = toSlugLocal(post?.slug ?? "");
+function getKey(post: CatPost, idx: number): string {
+  const idVal = post["_id"];
+  const id = typeof idVal === "string" || typeof idVal === "number" ? String(idVal) : null;
+  const slugVal = post["slug"] as Slug | undefined;
+  const slug = toSlugLocal(slugVal ?? "");
   return String(id ?? slug ?? idx);
 }
 
@@ -42,7 +35,6 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: { slug: string };
-  // Next.js 15: searchParams は Promise を await
   searchParams?: Promise<{ page?: string }>;
 }) {
   const { slug } = params;
@@ -54,13 +46,9 @@ export default async function CategoryPage({
   const start = (page - 1) * PER_PAGE;
   const end = start + PER_PAGE;
 
-  const data = await client.fetch<CategoryPageData>(CATEGORY_WITH_POSTS_QUERY, {
-    slug,
-    start,
-    end,
-  });
+  const data = await client.fetch<CategoryPageData>(CATEGORY_WITH_POSTS_QUERY, { slug, start, end });
 
-  const posts = (data.items ?? data.posts ?? []) as PostLike[];
+  const posts = (data.items ?? data.posts ?? []) as CatPost[];
   const total = typeof data.total === "number" ? data.total : posts.length;
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
   const title = data.title ?? slug;
@@ -82,35 +70,27 @@ export default async function CategoryPage({
         </div>
       )}
 
-      {/* ページネーション */}
       {totalPages > 1 && (
         <nav className="mt-10 flex items-center justify-center gap-3 text-sm">
-          {/* Prev */}
           <Link
             href={page > 1 ? `/category/${slug}?page=${page - 1}` : "#"}
             aria-disabled={page <= 1}
             className={`rounded-full border px-3 py-1.5 ${
-              page <= 1
-                ? "pointer-events-none border-neutral-200 text-neutral-300"
-                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              page <= 1 ? "pointer-events-none border-neutral-200 text-neutral-300" : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
             }`}
           >
             ← 前へ
           </Link>
 
-          {/* Page indicator */}
           <span className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-neutral-700">
             {page} / {totalPages}
           </span>
 
-          {/* Next */}
           <Link
             href={page < totalPages ? `/category/${slug}?page=${page + 1}` : "#"}
             aria-disabled={page >= totalPages}
             className={`rounded-full border px-3 py-1.5 ${
-              page >= totalPages
-                ? "pointer-events-none border-neutral-200 text-neutral-300"
-                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              page >= totalPages ? "pointer-events-none border-neutral-200 text-neutral-300" : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
             }`}
           >
             次へ →

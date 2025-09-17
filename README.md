@@ -3,6 +3,11 @@
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Development Environment
+
+- Node.js は `.nvmrc` の指定に従い、LTS の v20 系を利用してください。
+- Windows Subsystem for Linux (WSL) で開発する場合は、ext4 でフォーマットされたファイルシステム上での作業を推奨します。
+
 ## Getting Started
 
 First, run the development server:

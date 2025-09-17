@@ -73,9 +73,9 @@ export default async function CategoryPage({
     end,
   });
 
-  const posts = data?.items ?? [];
-  const total = data?.total ?? 0;
-  const catTitle = data?.catTitle ?? slug;
+  const posts = Array.isArray(data?.items) ? (data?.items as Record<string, unknown>[]) : [];
+  const total = typeof data?.total === "number" ? data.total : 0;
+  const catTitle = typeof data?.catTitle === "string" && data.catTitle ? data.catTitle : slug;
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (

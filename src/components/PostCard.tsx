@@ -73,7 +73,7 @@ export default function PostCard({ post }: PostCardProps) {
       : [];
 
   return (
-    <article className="group w-full h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article className="group h-full w-full overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-md transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl">
       <Link href={href} className="flex h-full flex-col focus:outline-none focus:ring-2 focus:ring-indigo-500">
         {/* 画像：常に 16:10 で統一（デフォルト画像も同じ比率） */}
         <div className="relative aspect-[16/10] w-full overflow-hidden">
@@ -88,7 +88,7 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
 
         {/* 本文：高さを均すため flex-1 で伸縮 */}
-        <div className="flex flex-1 flex-col p-4">
+        <div className="flex flex-1 flex-col p-6">
           {/* タグ */}
           {tags.length > 0 && (
             <div className="mb-1 flex flex-wrap gap-1.5">

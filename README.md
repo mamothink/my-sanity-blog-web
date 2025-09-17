@@ -5,6 +5,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+## Development Environment
+
+- Node.js のバージョン管理には [.nvmrc](./.nvmrc) を参照し、Node 20 LTS 系を使用してください。
+- Windows Subsystem for Linux (WSL) で開発する場合は、必ず ext4 ファイルシステム上のディレクトリを利用してください。
+
 First, run the development server:
 
 ```bash

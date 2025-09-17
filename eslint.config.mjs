@@ -18,10 +18,17 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "**/*.d.ts",
     ],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "import/no-anonymous-default-export": "off",
+    },
+  },
+  {
+    files: ["next-env.d.ts"],
+    rules: {
+      "@typescript-eslint/triple-slash-reference": "off",
     },
   },
 ];

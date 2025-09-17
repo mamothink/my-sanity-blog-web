@@ -73,14 +73,14 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <article
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-3xl bg-white shadow-[0_18px_40px_-25px_rgba(15,23,42,0.35)] ring-1 ring-black/5 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_28px_60px_-25px_rgba(15,23,42,0.45)]"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-3xl bg-white shadow-md shadow-slate-900/5 ring-1 ring-black/5 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-900/10"
     >
       <Link
         href={href}
         className="flex h-full flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
       >
-        {/* 画像：常に 16:10 で統一（デフォルト画像も同じ比率） */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-indigo-100 via-white to-purple-50">
+        {/* 画像：常に 4:3 で統一（デフォルト画像も同じ比率） */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-indigo-100 via-white to-purple-50">
           <Image
             src={imgUrl}
             alt={title}

@@ -28,7 +28,6 @@ function hasAssetRef(img: unknown): img is { asset: { _ref: string } } {
 function buildImageUrl(source: unknown, w: number, h: number): string | null {
   try {
     if (hasAssetRef(source)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return urlFor(source as any).width(w).height(h).url();
     }
   } catch {}

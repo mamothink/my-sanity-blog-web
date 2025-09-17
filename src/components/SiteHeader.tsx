@@ -18,43 +18,50 @@ export default async function SiteHeader() {
   const categories = await client.fetch<Category[]>(CATEGORIES_NAV_QUERY);
 
   return (
-    <header className="border-b border-neutral-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-white/50 bg-white/80 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         {/* ロゴ */}
-        <Link href="/" className="shrink-0 text-lg font-semibold tracking-tight">
-          My Blog
+        <Link href="/" className="text-xl font-black tracking-tight text-neutral-900 sm:text-2xl">
+          IKEHAYA
         </Link>
 
-        {/* ナビ（横スクロール可） */}
-        <nav className="hidden md:block">
-          <ul className="flex items-center gap-3">
-            {categories.map((c) => (
-              <li key={c._id}>
-                <Link
-                  href={`/category/${c.slug}`}
-                  className="inline-flex items-center rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-50"
-                >
-                  {c.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        {/* ナビ（デスクトップ） */}
+        <nav className="hidden flex-1 items-center justify-center gap-1 md:flex">
+          {categories.slice(0, 6).map((c) => (
+            <Link
+              key={c._id}
+              href={`/category/${c.slug}`}
+              className="inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+            >
+              {c.title}
+            </Link>
+          ))}
         </nav>
 
-        {/* モバイル（横スクロール） */}
-        <nav className="md:hidden -mr-2">
-          <div className="flex max-w-[70vw] gap-2 overflow-x-auto pb-1">
+        {/* CTA */}
+        <div className="hidden items-center gap-3 md:flex">
+          <Link
+            href="/#cta"
+            className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-transform hover:-translate-y-0.5"
+          >
+            特典請求
+          </Link>
+        </div>
+
+        {/* モバイルナビ */}
+        <div className="flex flex-1 justify-end md:hidden">
+          <div className="flex max-w-[75vw] gap-2 overflow-x-auto rounded-full border border-white/60 bg-white/70 px-3 py-2 shadow-sm">
             {categories.map((c) => (
               <Link
                 key={c._id}
                 href={`/category/${c.slug}`}
-                className="whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-50"
+                className="whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium text-neutral-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
               >
                 {c.title}
               </Link>
             ))}
           </div>
-        </nav>
+        </div>
       </div>
     </header>
   );

@@ -73,7 +73,7 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <article
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/80 shadow-[0_25px_45px_-30px_rgba(79,70,229,0.45)] ring-1 ring-indigo-100/60 backdrop-blur transition-transform duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_32px_60px_-28px_rgba(79,70,229,0.55)]"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-3xl bg-white shadow-[0_18px_40px_-25px_rgba(15,23,42,0.35)] ring-1 ring-black/5 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_28px_60px_-25px_rgba(15,23,42,0.45)]"
     >
       <Link
         href={href}
@@ -107,21 +107,19 @@ export default function PostCard({ post }: PostCardProps) {
             </div>
           )}
 
-          {/* 日付 */}
-          {date && (
-            <time className="block text-xs font-medium uppercase tracking-wide text-indigo-500">{date}</time>
-          )}
-
           {/* タイトル */}
-          <h2 className="mt-1 line-clamp-2 text-lg font-semibold leading-snug text-gray-900">
+          <h2 className="mt-2 line-clamp-2 text-xl font-bold leading-snug text-gray-900">
             {title}
           </h2>
 
+          {/* 日付 */}
+          {date && <time className="mt-1 block text-sm font-medium text-gray-500">{date}</time>}
+
           {/* 抜粋（下端に余白を残す） */}
-          {excerpt && <p className="mt-3 line-clamp-3 text-sm text-gray-600">{excerpt}</p>}
+          {excerpt && <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-gray-600">{excerpt}</p>}
 
           {/* フッター余白（高さ合わせ） */}
-          <div className="mt-auto pt-3" />
+          <div className="mt-auto pt-4" />
         </div>
       </Link>
     </article>

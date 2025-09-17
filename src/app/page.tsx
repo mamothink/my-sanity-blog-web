@@ -255,7 +255,7 @@ export default async function HomePage({
             {featuredPost && <FeaturedPost post={featuredPost} />}
 
             {restPosts.length > 0 && (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 {restPosts.map((post, idx) => (
                   <PostCard key={getKey(post, idx + 1)} post={post} />
                 ))}

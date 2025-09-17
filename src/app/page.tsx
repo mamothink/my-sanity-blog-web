@@ -57,7 +57,7 @@ export default async function HomePage({
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-6 py-12 sm:px-8 lg:py-16">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">My Blog</h1>
         <p className="mt-2 text-sm text-gray-600">最近の投稿</p>
@@ -66,11 +66,7 @@ export default async function HomePage({
       {!posts.length && <p>まだ記事がありません。</p>}
 
       {posts.length > 0 && (
-        // ★ 重要：Tailwind のブレークポイントに依存せず、CSS Grid を直接指定
-        <div
-          className="grid gap-6"
-          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
-        >
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
           {posts
             .filter((p): p is Record<string, unknown> => typeof p === "object" && p !== null)
             .map((post, idx) => (

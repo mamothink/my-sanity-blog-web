@@ -26,7 +26,6 @@ function hasAssetRef(img: unknown): img is { asset: { _ref: string } } {
 function buildImageUrl(source: unknown, w: number, h: number): string | null {
   try {
     if (hasAssetRef(source)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return urlFor(source as any).width(w).height(h).url();
     }
   } catch {}
@@ -73,13 +72,15 @@ export default function PostCard({ post }: PostCardProps) {
       : [];
 
   return (
-    <article className="group relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-md transition-transform duration-300 ease-out hover:-translate-y-2 hover:shadow-xl">
+    <article
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/80 shadow-[0_25px_45px_-30px_rgba(79,70,229,0.45)] ring-1 ring-indigo-100/60 backdrop-blur transition-transform duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_32px_60px_-28px_rgba(79,70,229,0.55)]"
+    >
       <Link
         href={href}
         className="flex h-full flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
       >
         {/* 画像：常に 16:10 で統一（デフォルト画像も同じ比率） */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-indigo-100 via-white to-purple-50">
           <Image
             src={imgUrl}
             alt={title}
@@ -107,10 +108,12 @@ export default function PostCard({ post }: PostCardProps) {
           )}
 
           {/* 日付 */}
-          {date && <time className="block text-xs text-gray-500">{date}</time>}
+          {date && (
+            <time className="block text-xs font-medium uppercase tracking-wide text-indigo-500">{date}</time>
+          )}
 
           {/* タイトル */}
-          <h2 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-gray-900">
+          <h2 className="mt-1 line-clamp-2 text-lg font-semibold leading-snug text-gray-900">
             {title}
           </h2>
 

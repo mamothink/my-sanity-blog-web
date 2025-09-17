@@ -46,16 +46,49 @@ export default async function HomePage() {
   const typedPosts = posts.filter((p): p is Record<string, unknown> => isRecord(p));
 
   return (
-    <div className="mx-auto max-w-6xl py-8 sm:py-12 lg:py-16">
-      {typedPosts.length > 0 ? (
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {typedPosts.map((post, idx) => (
-            <PostCard key={getKey(post, idx)} post={post} />
-          ))}
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+      <div className="grid gap-12 lg:grid-cols-3 lg:items-start">
+        <div className="lg:col-span-2">
+          {typedPosts.length > 0 ? (
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+              {typedPosts.map((post, idx) => (
+                <PostCard key={getKey(post, idx)} post={post} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-500">まだ記事がありません。</p>
+          )}
         </div>
-      ) : (
-        <p className="text-sm text-neutral-500">まだ記事がありません。</p>
-      )}
+
+        <aside className="space-y-8">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-neutral-900">電子書籍の紹介</h2>
+            <ul className="mt-4 space-y-2 text-sm text-neutral-600">
+              <li>・電子書籍タイトルAの紹介文が入ります。</li>
+              <li>・電子書籍タイトルBの紹介文が入ります。</li>
+            </ul>
+          </section>
+
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-neutral-900">カテゴリー一覧</h2>
+            <ul className="mt-4 space-y-2 text-sm text-neutral-600">
+              <li>・カテゴリー1</li>
+              <li>・カテゴリー2</li>
+              <li>・カテゴリー3</li>
+              <li>・カテゴリー4</li>
+            </ul>
+          </section>
+
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-neutral-900">人気記事ランキング</h2>
+            <ol className="mt-4 space-y-3 text-sm text-neutral-600">
+              <li>1. 人気記事タイトルサンプル</li>
+              <li>2. 人気記事タイトルサンプル</li>
+              <li>3. 人気記事タイトルサンプル</li>
+            </ol>
+          </section>
+        </aside>
+      </div>
     </div>
   );
 }

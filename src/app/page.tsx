@@ -127,16 +127,9 @@ function FeaturedPost({ post }: { post: Record<string, unknown> }) {
         <div className="flex flex-col justify-between gap-6 p-8">
           <div className="space-y-4">
             {categories.length > 0 && (
-              <div id="categories" className="flex flex-wrap gap-2">
-                {categories.map((cat) => (
-                  <span
-                    key={cat}
-                    className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-600"
-                  >
-                    {cat}
-                  </span>
-                ))}
-              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-500">
+                {categories.join(" / ")}
+              </p>
             )}
             {date && <time className="block text-xs font-medium uppercase tracking-[0.2em] text-indigo-500">{date}</time>}
             <h2 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">{title}</h2>
@@ -183,9 +176,7 @@ export default async function HomePage({
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-48 w-48 rounded-full bg-purple-300/30 blur-3xl" />
         <div className="relative z-10 grid gap-10 lg:grid-cols-[minmax(0,1.6fr),minmax(0,1fr)] lg:items-center">
           <div className="space-y-6 text-neutral-800">
-            <span className="inline-flex items-center rounded-full bg-white/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-500">
-              BLOG
-            </span>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-500">BLOG</p>
             <div className="space-y-4">
               <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl lg:text-5xl">
                 Web3、投資、ライフスタイルなど幅広いトピックを発信しています
@@ -195,13 +186,9 @@ export default async function HomePage({
               </p>
             </div>
             {categories.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-500">
                 {categories.slice(0, 8).map((category) => (
-                  <Link
-                    key={category._id}
-                    href={`/category/${category.slug}`}
-                    className="inline-flex items-center rounded-full border border-indigo-100 bg-white/80 px-4 py-1.5 text-sm font-medium text-indigo-600 shadow-sm transition-colors hover:bg-indigo-50"
-                  >
+                  <Link key={category._id} href={`/category/${category.slug}`} className="transition-colors hover:text-indigo-400">
                     #{category.title}
                   </Link>
                 ))}
@@ -255,7 +242,7 @@ export default async function HomePage({
             {featuredPost && <FeaturedPost post={featuredPost} />}
 
             {restPosts.length > 0 && (
-              <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 {restPosts.map((post, idx) => (
                   <PostCard key={getKey(post, idx + 1)} post={post} />
                 ))}

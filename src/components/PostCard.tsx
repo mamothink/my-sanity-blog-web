@@ -95,16 +95,9 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="flex flex-1 flex-col p-6">
           {/* タグ */}
           {tags.length > 0 && (
-            <div className="mb-1 flex flex-wrap gap-1.5">
-              {tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] leading-none text-gray-600"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-500">
+              {tags.join(" / ")}
+            </p>
           )}
 
           {/* タイトル */}

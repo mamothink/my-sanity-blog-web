@@ -6,7 +6,7 @@ export default function SiteFooter() {
 
   return (
     <footer className="mt-20 border-t border-white/60 bg-gradient-to-b from-white to-indigo-50/60">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
             <p className="text-lg font-semibold tracking-tight text-neutral-900">IKEHAYA BLOG</p>

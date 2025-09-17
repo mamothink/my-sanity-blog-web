@@ -109,9 +109,6 @@ export default async function PostPage({
       : null;
   const authorSlug = isRecord(post.author) ? toSlug(post.author?.slug) : "";
 
-  // 16:10 に合わせて生成（CSSでも16:10を担保）
-  const heroUrl = buildImageUrl(post.mainImage, 1200, 750) ?? "/default-og.png";
-
   return (
     <main className="px-4 py-10 max-w-none">
       <article>
@@ -135,23 +132,6 @@ export default async function PostPage({
             ) : null}
           </div>
         </header>
-
-        {/* 見出し画像：中央寄せ・max-w-3xl・16:10（width/height 版で安定） */}
-        <div className="mx-auto max-w-3xl mb-6" style={{ maxWidth: 768 }}>
-          <div className="relative w-full overflow-hidden rounded-xl bg-gray-100">
-            <div className="aspect-[16/10] w-full">
-              <Image
-                src={heroUrl}
-                alt={title}
-                width={1200}
-                height={750}
-                className="block h-auto w-full rounded-xl object-cover"
-                sizes="(max-width: 768px) 100vw, 768px"
-                priority={false}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* 抜粋 */}
         {typeof post.excerpt === "string" && post.excerpt && (

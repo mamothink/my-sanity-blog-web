@@ -25,7 +25,7 @@ export default async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/50 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1200px] items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         {/* ロゴ */}
         <Link href="/" className="text-xl font-black tracking-tight text-neutral-900 sm:text-2xl">
           IKEHAYA

@@ -34,7 +34,13 @@ function getKey(post: Record<string, unknown>, idx: number): string {
 }
 
 export default async function HomePage() {
-  const data = await client.fetch<PageData>(POSTS_PAGE_QUERY, { start: 0, end: PER_PAGE });
+  let data: PageData | null = null;
+
+  try {
+    data = await client.fetch<PageData>(POSTS_PAGE_QUERY, { start: 0, end: PER_PAGE });
+  } catch (error) {
+    console.error("[HomePage] Failed to load posts", error);
+  }
 
   const posts = data?.items ?? [];
   const typedPosts = posts.filter((p): p is Record<string, unknown> => isRecord(p));

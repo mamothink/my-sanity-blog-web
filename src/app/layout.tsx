@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
 
 // ✅ 優先順: NEXT_PUBLIC_SITE_URL > VERCEL_URL > localhost
 const siteUrl =
@@ -23,7 +22,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-[60vh] px-4 py-8 sm:px-6 lg:px-8">
           {children}
         </main>
-        <SiteFooter />
       </body>
     </html>
   );

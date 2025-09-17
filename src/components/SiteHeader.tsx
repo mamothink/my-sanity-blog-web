@@ -15,7 +15,13 @@ const CATEGORIES_NAV_QUERY = `
 `;
 
 export default async function SiteHeader() {
-  const categories = await client.fetch<Category[]>(CATEGORIES_NAV_QUERY);
+  let categories: Category[] = [];
+
+  try {
+    categories = await client.fetch<Category[]>(CATEGORIES_NAV_QUERY);
+  } catch (error) {
+    console.error("[SiteHeader] Failed to load categories", error);
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/50 bg-white/80 backdrop-blur">
@@ -37,16 +43,6 @@ export default async function SiteHeader() {
             </Link>
           ))}
         </nav>
-
-        {/* CTA */}
-        <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="/#cta"
-            className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-transform hover:-translate-y-0.5"
-          >
-            特典請求
-          </Link>
-        </div>
 
         {/* モバイルナビ */}
         <div className="flex flex-1 justify-end md:hidden">

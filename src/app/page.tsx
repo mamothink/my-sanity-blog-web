@@ -1,3 +1,4 @@
+// src/app/page.tsx
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
 import { POSTS_PAGE_QUERY } from "@/lib/queries";
@@ -12,12 +13,10 @@ type PageData = {
 
 const PER_PAGE = 8;
 
-/* 安全にオブジェクト判定 */
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
 
-/* slug を安全に取り出す（string or {current} どちらでもOK） */
 function toSlugLocal(slug: unknown): string {
   if (typeof slug === "string") return slug;
   if (isRecord(slug)) {
@@ -27,7 +26,6 @@ function toSlugLocal(slug: unknown): string {
   return "";
 }
 
-/* key 生成（_id → slug → idx の順でフォールバック） */
 function getKey(post: Record<string, unknown>, idx: number): string {
   const id =
     isRecord(post) && (typeof post["_id"] === "string" || typeof post["_id"] === "number")
@@ -40,7 +38,6 @@ function getKey(post: Record<string, unknown>, idx: number): string {
 export default async function HomePage({
   searchParams,
 }: {
-  // Next.js 15 では searchParams は Promise として受け取って await が必要
   searchParams?: Promise<{ page?: string }>;
 }) {
   const sp = (await searchParams) ?? {};
@@ -56,7 +53,7 @@ export default async function HomePage({
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-4 py-10">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">My Blog</h1>
         <p className="mt-2 text-sm text-gray-600">最近の投稿</p>
@@ -65,17 +62,17 @@ export default async function HomePage({
       {!posts.length && <p>まだ記事がありません。</p>}
 
       {posts.length > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {posts.map((post, idx) => (
-            <PostCard key={getKey(post, idx)} post={post} />
+            <div key={getKey(post, idx)} className="max-w-sm mx-auto">
+              <PostCard post={post} />
+            </div>
           ))}
         </div>
       )}
 
-      {/* ページネーション */}
       {totalPages > 1 && (
         <nav className="mt-10 flex items-center justify-center gap-3 text-sm">
-          {/* Prev */}
           <Link
             href={page > 1 ? `/?page=${page - 1}` : "#"}
             aria-disabled={page <= 1}
@@ -88,12 +85,10 @@ export default async function HomePage({
             ← 前へ
           </Link>
 
-          {/* Page indicator */}
           <span className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-neutral-700">
             {page} / {totalPages}
           </span>
 
-          {/* Next */}
           <Link
             href={page < totalPages ? `/?page=${page + 1}` : "#"}
             aria-disabled={page >= totalPages}

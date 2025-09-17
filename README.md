@@ -1,3 +1,6 @@
+# Codex check
+この行が見えたら Codex 連携OK
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

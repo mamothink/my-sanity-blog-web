@@ -13,31 +13,35 @@ type PageData = {
 
 const PER_PAGE = 8;
 
+/** 安全にオブジェクト判定 */
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
 
+/** slug を安全に取り出す（string or {current} どちらでもOK） */
 function toSlugLocal(slug: unknown): string {
   if (typeof slug === "string") return slug;
   if (isRecord(slug)) {
-    const cur = slug["current"];
+    const cur = (slug as Record<string, unknown>)["current"];
     if (typeof cur === "string") return cur;
   }
   return "";
 }
 
+/** key 生成（_id → slug → idx の順でフォールバック） */
 function getKey(post: Record<string, unknown>, idx: number): string {
   const id =
-    isRecord(post) && (typeof post["_id"] === "string" || typeof post["_id"] === "number")
-      ? String(post["_id"])
+    isRecord(post) && (typeof (post as any)._id === "string" || typeof (post as any)._id === "number")
+      ? String((post as any)._id)
       : null;
-  const slug = isRecord(post) ? toSlugLocal(post["slug"]) : "";
+  const slug = isRecord(post) ? toSlugLocal((post as any)["slug"]) : "";
   return String(id ?? slug ?? idx);
 }
 
 export default async function HomePage({
   searchParams,
 }: {
+  // Next.js 15 では searchParams は Promise として受け取って await が必要
   searchParams?: Promise<{ page?: string }>;
 }) {
   const sp = (await searchParams) ?? {};
@@ -62,17 +66,23 @@ export default async function HomePage({
       {!posts.length && <p>まだ記事がありません。</p>}
 
       {posts.length > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {posts.map((post, idx) => (
-            <div key={getKey(post, idx)} className="max-w-sm mx-auto">
-              <PostCard post={post} />
-            </div>
-          ))}
+        // ★ 重要：Tailwind のブレークポイントに依存せず、CSS Grid を直接指定
+        <div
+          className="grid gap-6"
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
+        >
+          {posts
+            .filter((p): p is Record<string, unknown> => typeof p === "object" && p !== null)
+            .map((post, idx) => (
+              <PostCard key={getKey(post, idx)} post={post} />
+            ))}
         </div>
       )}
 
+      {/* ページネーション */}
       {totalPages > 1 && (
         <nav className="mt-10 flex items-center justify-center gap-3 text-sm">
+          {/* Prev */}
           <Link
             href={page > 1 ? `/?page=${page - 1}` : "#"}
             aria-disabled={page <= 1}
@@ -85,10 +95,12 @@ export default async function HomePage({
             ← 前へ
           </Link>
 
+          {/* Page indicator */}
           <span className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-neutral-700">
             {page} / {totalPages}
           </span>
 
+          {/* Next */}
           <Link
             href={page < totalPages ? `/?page=${page + 1}` : "#"}
             aria-disabled={page >= totalPages}

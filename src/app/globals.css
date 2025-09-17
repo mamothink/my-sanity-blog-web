@@ -50,3 +50,40 @@ code { padding: 0.125rem 0.25rem; border-radius: 6px; background: #f3f4f6; color
   padding-left: 1rem;
   padding-right: 1rem;
 }
+
+/* ===== ここから “記事内画像を必ず縮める” セーフティ ===== */
+/* 記事(Article)内に出てくる通常の <img> は横幅フィット/高さ自動に固定 */
+article img {
+  max-width: 100% !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* ヒーロー用の保険（[slug]/page.tsx の Image に className="hero-img" を付けている場合） */
+.hero-img {
+  width: 100% !important;
+  height: auto !important;
+  object-fit: cover;
+  border-radius: 12px;
+  aspect-ratio: 16 / 10;
+  display: block;
+}
+/* ---- Post detail hero safe guard ---- */
+.post-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;   /* ここでも上限を保証 */
+  object-fit: cover;
+  border-radius: 12px;
+}
+/* ---- Post detail hero override ---- */
+.hero-img {
+  max-width: none !important;
+  width: 100% !important; /* 親の max-w-3xl に従う */
+  height: auto !important;
+  object-fit: cover;
+  border-radius: 12px;
+  aspect-ratio: 16 / 10;
+  display: block;
+}

@@ -1,44 +1,65 @@
+// src/app/category/[slug]/page.tsx
 import Link from "next/link";
 import { client } from "@/lib/sanity.client";
-import { CATEGORY_WITH_POSTS_QUERY } from "@/lib/queries";
 import PostCard from "@/components/PostCard";
 
 export const revalidate = 60;
 
-type Slug = string | { current?: string } | null | undefined;
-type CatPost = Record<string, unknown>;
-
-type CategoryPageData = {
-  title?: string | null;
-  items?: CatPost[];
-  posts?: CatPost[];
-  total?: number;
+type PageData = {
+  total: number;
+  catTitle: string;
+  items: Record<string, unknown>[];
 };
 
-const PER_PAGE = 8;
+const PER_PAGE = 12;
 
-function toSlugLocal(slug: Slug): string {
-  if (!slug) return "";
-  if (typeof slug === "string") return slug;
-  return slug.current ?? "";
+/** 安全にオブジェクト判定 */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
 }
-function getKey(post: CatPost, idx: number): string {
-  const idVal = post["_id"];
-  const id = typeof idVal === "string" || typeof idVal === "number" ? String(idVal) : null;
-  const slugVal = post["slug"] as Slug | undefined;
-  const slug = toSlugLocal(slugVal ?? "");
+
+/** slug を安全に取り出す（string or {current} どちらでもOK） */
+function toSlugLocal(slug: unknown): string {
+  if (typeof slug === "string") return slug;
+  if (isRecord(slug)) {
+    const cur = (slug as Record<string, unknown>)["current"];
+    if (typeof cur === "string") return cur;
+  }
+  return "";
+}
+
+/** key 生成（_id → slug → idx の順でフォールバック） */
+function getKey(post: Record<string, unknown>, idx: number): string {
+  const id =
+    isRecord(post) && (typeof (post as any)._id === "string" || typeof (post as any)._id === "number")
+      ? String((post as any)._id)
+      : null;
+  const slug = isRecord(post) ? toSlugLocal((post as any)["slug"]) : "";
   return String(id ?? slug ?? idx);
 }
+
+// GROQ：カテゴリ slug で合計件数 + ページ分の投稿を返す
+const CATEGORY_PAGE_QUERY = /* groq */ `
+{
+  "catTitle": coalesce(*[_type=="category" && slug.current==$slug][0].title, $slug),
+  "total": count(*[_type=="post" && references(*[_type=="category" && slug.current==$slug]._id)]),
+  "items": *[_type=="post" && references(*[_type=="category" && slug.current==$slug]._id)]
+            | order(publishedAt desc)
+            [$start...$end]{
+    _id, title, slug, excerpt, mainImage, publishedAt,
+    "categories": categories[]-> { title }
+  }
+}
+`;
 
 export default async function CategoryPage({
   params,
   searchParams,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
   searchParams?: Promise<{ page?: string }>;
 }) {
-  const { slug } = params;
-
+  const { slug } = await params;
   const sp = (await searchParams) ?? {};
   const pageNum = Number.parseInt(sp.page ?? "1", 10);
   const page = Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1;
@@ -46,27 +67,36 @@ export default async function CategoryPage({
   const start = (page - 1) * PER_PAGE;
   const end = start + PER_PAGE;
 
-  const data = await client.fetch<CategoryPageData>(CATEGORY_WITH_POSTS_QUERY, { slug, start, end });
+  const data = await client.fetch<PageData>(CATEGORY_PAGE_QUERY, {
+    slug,
+    start,
+    end,
+  });
 
-  const posts = (data.items ?? data.posts ?? []) as CatPost[];
-  const total = typeof data.total === "number" ? data.total : posts.length;
+  const posts = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const catTitle = data?.catTitle ?? slug;
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
-  const title = data.title ?? slug;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-4 py-10">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">カテゴリ：{title}</h1>
-        <p className="mt-2 text-sm text-gray-600">このカテゴリの投稿一覧</p>
+        <h1 className="text-2xl font-bold tracking-tight">カテゴリ: {catTitle}</h1>
+        <p className="mt-2 text-sm text-gray-600">該当 {total} 件</p>
       </header>
 
-      {!posts.length && <p>まだ記事がありません。</p>}
+      {!posts.length && <p>このカテゴリの記事はまだありません。</p>}
 
       {posts.length > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2">
-          {posts.map((post, idx) => (
-            <PostCard key={getKey(post, idx)} post={post} />
-          ))}
+        <div
+          className="grid gap-6"
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
+        >
+          {posts
+            .filter((p): p is Record<string, unknown> => typeof p === "object" && p !== null)
+            .map((post, idx) => (
+              <PostCard key={getKey(post, idx)} post={post} />
+            ))}
         </div>
       )}
 
@@ -76,7 +106,9 @@ export default async function CategoryPage({
             href={page > 1 ? `/category/${slug}?page=${page - 1}` : "#"}
             aria-disabled={page <= 1}
             className={`rounded-full border px-3 py-1.5 ${
-              page <= 1 ? "pointer-events-none border-neutral-200 text-neutral-300" : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              page <= 1
+                ? "pointer-events-none border-neutral-200 text-neutral-300"
+                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
             }`}
           >
             ← 前へ
@@ -90,7 +122,9 @@ export default async function CategoryPage({
             href={page < totalPages ? `/category/${slug}?page=${page + 1}` : "#"}
             aria-disabled={page >= totalPages}
             className={`rounded-full border px-3 py-1.5 ${
-              page >= totalPages ? "pointer-events-none border-neutral-200 text-neutral-300" : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              page >= totalPages
+                ? "pointer-events-none border-neutral-200 text-neutral-300"
+                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50"
             }`}
           >
             次へ →

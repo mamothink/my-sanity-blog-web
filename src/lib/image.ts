@@ -1,8 +1,12 @@
-import imageUrlBuilder from '@sanity/image-url'
-import type {Image} from 'sanity'
-import {client} from './sanity.client'
+import imageUrlBuilder from "@sanity/image-url";
+import type { Image } from "sanity";
+import { client, sanityConfig } from "./sanity.client";
 
-const builder = imageUrlBuilder(client)
+const builder = sanityConfig.isConfigured ? imageUrlBuilder(client) : null;
+
 export function urlFor(source: Image) {
-  return builder.image(source)
+  if (!builder) {
+    throw new Error("Sanity image builder is not configured");
+  }
+  return builder.image(source);
 }

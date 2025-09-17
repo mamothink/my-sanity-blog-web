@@ -42,7 +42,7 @@ export default async function HomePage() {
     console.error("[HomePage] Failed to load posts", error);
   }
 
-  const posts = data?.items ?? [];
+  const posts = Array.isArray(data?.items) ? (data?.items as Record<string, unknown>[]) : [];
   const typedPosts = posts.filter((p): p is Record<string, unknown> => isRecord(p));
 
   return (

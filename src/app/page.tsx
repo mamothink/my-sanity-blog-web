@@ -47,10 +47,10 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-      <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-14">
-        <div className="lg:min-w-0 lg:flex-1">
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-16">
+        <section className="lg:min-w-0 lg:flex-1">
           {typedPosts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-10">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
               {typedPosts.map((post, idx) => (
                 <PostCard key={getKey(post, idx)} post={post} />
               ))}
@@ -58,9 +58,9 @@ export default async function HomePage() {
           ) : (
             <p className="text-sm text-neutral-500">まだ記事がありません。</p>
           )}
-        </div>
+        </section>
 
-        <aside className="order-last space-y-8 lg:order-none lg:sticky lg:top-28 lg:w-[320px] lg:flex-none">
+        <aside className="space-y-8 lg:sticky lg:top-28 lg:w-[320px] lg:flex-none">
           <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-neutral-900">電子書籍の紹介</h2>
             <ul className="mt-4 space-y-2 text-sm text-neutral-600">

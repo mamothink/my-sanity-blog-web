@@ -61,7 +61,6 @@ code { padding: 0.125rem 0.25rem; border-radius: 6px; background: #f3f4f6; color
 
 @media (min-width: 1024px) {
   .home-posts-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2.5rem;
   }
 }

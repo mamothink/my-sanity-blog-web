@@ -53,12 +53,17 @@ export default async function HomePage() {
   const sidebarCardClasses =
     "group rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100 transition-transform duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl";
 
+  const containerClasses =
+    "mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16";
+  const layoutClasses = "grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-14";
+  const postsGridClasses = "home-posts-grid grid grid-cols-1 gap-8 sm:gap-10 lg:grid-cols-2";
+
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-14">
+    <div className={containerClasses}>
+      <div className={layoutClasses}>
         <section className="lg:min-w-0 lg:flex-1">
           {postsToRender.length > 0 ? (
-            <div className="home-posts-grid grid grid-cols-1 gap-8">
+            <div className={postsGridClasses}>
               {postsToRender.map((post, idx) => (
                 <PostCard key={getKey(post, idx)} post={post} />
               ))}

@@ -73,6 +73,21 @@ code { padding: 0.125rem 0.25rem; border-radius: 6px; background: #f3f4f6; color
   }
 }
 
+.home-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .home-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: 3rem;
+    align-items: start;
+  }
+}
+
 /* ===== ここから “記事内画像を必ず縮める” セーフティ ===== */
 /* 記事(Article)内に出てくる通常の <img> は横幅フィット/高さ自動に固定 */
 article img {

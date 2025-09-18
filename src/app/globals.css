@@ -54,6 +54,18 @@ code { padding: 0.125rem 0.25rem; border-radius: 6px; background: #f3f4f6; color
   padding-right: 1rem;
 }
 
+/* トップページの記事グリッド（スマホ1列／PC2列） */
+.home-posts-grid {
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .home-posts-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5rem;
+  }
+}
+
 /* ===== ここから “記事内画像を必ず縮める” セーフティ ===== */
 /* 記事(Article)内に出てくる通常の <img> は横幅フィット/高さ自動に固定 */
 article img {

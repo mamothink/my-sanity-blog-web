@@ -44,22 +44,19 @@ export default async function HomePage() {
 
   const posts = Array.isArray(data?.items) ? (data?.items as Record<string, unknown>[]) : [];
   const typedPosts = posts.filter((p): p is Record<string, unknown> => isRecord(p));
+  const shouldShowPlaceholders = typedPosts.length === 0 && process.env.NODE_ENV !== "production";
+  const placeholderPosts: Record<string, unknown>[] = shouldShowPlaceholders
+    ? Array.from({ length: 4 }, (_, idx) => ({ _id: `placeholder-${idx}` }))
+    : [];
+  const postsToRender = shouldShowPlaceholders ? placeholderPosts : typedPosts;
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <header className="mb-12 flex flex-col gap-3 text-center lg:mb-14 lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-indigo-500">Mamoo Blog</p>
-        <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">ブログ</h1>
-        <p className="text-base text-slate-600 sm:text-lg">
-          Web3、資産形成、ライフスタイルなど幅広いトピックをゆるく深掘りします。
-        </p>
-      </header>
-
       <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-14">
         <section className="lg:min-w-0 lg:flex-1">
-          {typedPosts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-              {typedPosts.map((post, idx) => (
+          {postsToRender.length > 0 ? (
+            <div className="home-posts-grid grid grid-cols-1 gap-8">
+              {postsToRender.map((post, idx) => (
                 <PostCard key={getKey(post, idx)} post={post} />
               ))}
             </div>

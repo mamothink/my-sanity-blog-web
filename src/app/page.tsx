@@ -1,7 +1,9 @@
 // src/app/page.tsx
 import { client } from "@/lib/sanity.client";
+import Link from "next/link";
 import { POSTS_PAGE_QUERY } from "@/lib/queries";
 import PostCard from "@/components/PostCard";
+import SidebarCard from "@/components/SidebarCard";
 
 export const revalidate = 60;
 
@@ -33,6 +35,22 @@ function getKey(post: Record<string, unknown>, idx: number): string {
   return String(id ?? slug ?? idx);
 }
 
+function toSlug(slug: unknown): string {
+  if (typeof slug === "string") return slug;
+  if (isRecord(slug) && typeof (slug as any).current === "string") return (slug as any).current;
+  return "";
+}
+
+function toTimestamp(value: unknown): number | null {
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
 export default async function HomePage() {
   let data: PageData | null = null;
 
@@ -50,8 +68,34 @@ export default async function HomePage() {
     : [];
   const postsToRender = shouldShowPlaceholders ? placeholderPosts : typedPosts;
 
-  const sidebarCardClasses =
-    "group rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100 transition-transform duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl";
+  const ebookItems = ["電子書籍タイトルA", "電子書籍タイトルB", "電子書籍タイトルC"];
+
+  const categoryTitles = new Set<string>();
+  typedPosts.forEach((post) => {
+    const categories = Array.isArray((post as any).categories) ? (post as any).categories : [];
+    categories.forEach((category) => {
+      if (isRecord(category) && typeof (category as any).title === "string" && (category as any).title.trim()) {
+        categoryTitles.add((category as any).title);
+      }
+    });
+  });
+  const categoriesList = Array.from(categoryTitles);
+  const fallbackCategories = ["カテゴリー1", "カテゴリー2", "カテゴリー3", "カテゴリー4"];
+  const categoriesToRender = categoriesList.length > 0 ? categoriesList : fallbackCategories;
+
+  const popularPosts = typedPosts
+    .map((post) => {
+      const title = typeof (post as any).title === "string" && (post as any).title.trim() ? (post as any).title : null;
+      if (!title) return null;
+      const slug = toSlug((post as any).slug);
+      const publishedAt = toTimestamp((post as any).publishedAt);
+      return { title, slug, publishedAt };
+    })
+    .filter((item): item is { title: string; slug: string; publishedAt: number | null } => item !== null)
+    .sort((a, b) => (b.publishedAt ?? 0) - (a.publishedAt ?? 0))
+    .slice(0, 5);
+  const fallbackPopular = Array.from({ length: 3 }, () => ({ title: "人気記事タイトルサンプル", slug: "", publishedAt: null }));
+  const popularToRender = popularPosts.length > 0 ? popularPosts : fallbackPopular;
 
   const containerClasses =
     "mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16";
@@ -74,32 +118,41 @@ export default async function HomePage() {
         </section>
 
         <aside className="space-y-8 lg:sticky lg:top-28 lg:w-[320px] lg:flex-none">
-          <section className={sidebarCardClasses}>
-            <h2 className="text-lg font-semibold text-slate-900">電子書籍の紹介</h2>
-            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
-              <li>・電子書籍タイトルAの紹介文が入ります。</li>
-              <li>・電子書籍タイトルBの紹介文が入ります。</li>
+          <SidebarCard title="電子書籍の紹介">
+            <ul className="space-y-2">
+              {ebookItems.map((item) => (
+                <li key={item}>・{item}</li>
+              ))}
             </ul>
-          </section>
+          </SidebarCard>
 
-          <section className={sidebarCardClasses}>
-            <h2 className="text-lg font-semibold text-slate-900">カテゴリー一覧</h2>
-            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
-              <li>・カテゴリー1</li>
-              <li>・カテゴリー2</li>
-              <li>・カテゴリー3</li>
-              <li>・カテゴリー4</li>
+          <SidebarCard title="カテゴリー一覧">
+            <ul className="space-y-2">
+              {categoriesToRender.map((title) => (
+                <li key={title}>・{title}</li>
+              ))}
             </ul>
-          </section>
+          </SidebarCard>
 
-          <section className={sidebarCardClasses}>
-            <h2 className="text-lg font-semibold text-slate-900">人気記事ランキング</h2>
-            <ol className="mt-4 space-y-3 text-sm leading-relaxed text-slate-600">
-              <li>1. 人気記事タイトルサンプル</li>
-              <li>2. 人気記事タイトルサンプル</li>
-              <li>3. 人気記事タイトルサンプル</li>
+          <SidebarCard title="人気記事ランキング">
+            <ol className="space-y-3">
+              {popularToRender.map((item, idx) => (
+                <li key={`${item.slug || item.title}-${idx}`} className="flex items-start gap-2">
+                  <span className="text-indigo-500">{idx + 1}.</span>
+                  {item.slug ? (
+                    <Link
+                      href={`/${item.slug}`}
+                      className="flex-1 text-slate-700 transition-colors duration-200 hover:text-indigo-500 focus:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
+                    >
+                      {item.title}
+                    </Link>
+                  ) : (
+                    <span className="flex-1 text-slate-700">{item.title}</span>
+                  )}
+                </li>
+              ))}
             </ol>
-          </section>
+          </SidebarCard>
         </aside>
       </div>
     </div>

@@ -199,7 +199,7 @@ export default async function HomePage() {
     "group rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100 transition-transform duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl";
 
   const containerClasses =
-    "mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16";
+    "mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16 xl:max-w-[1360px] xl:px-10 2xl:max-w-[1520px] 2xl:px-12";
   const layoutClasses = "home-layout";
   const postsGridClasses = "home-posts-grid grid grid-cols-1 gap-8 sm:gap-10 lg:grid-cols-2";
 

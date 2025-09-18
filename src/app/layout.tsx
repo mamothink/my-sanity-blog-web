@@ -18,8 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ja">
       <body className="bg-white text-neutral-900 antialiased">
         <SiteHeader />
-        {/* max-w を外し、全幅に変更 → ページ側で自由に制御 */}
-        <main className="min-h-[60vh] px-4 py-8 sm:px-6 lg:px-8">
+        {/* 全ページで最大幅を統一しつつ、内側に余白を確保 */}
+        <main className="mx-auto w-full max-w-[1200px] min-h-[60vh] px-4 py-8 sm:px-6 lg:px-8">
           {children}
         </main>
       </body>

@@ -35,6 +35,35 @@ export const POSTS_PAGE_QUERY = `
 }
 `;
 
+export const HOMEPAGE_SIDEBAR_QUERY = /* groq */ `
+{
+  "ebook": *[_type == "ebook" && !(_id in path('drafts.**'))]
+    | order(coalesce(orderRank, order, 0) asc, _createdAt desc)[0]{
+      _id,
+      title,
+      description,
+      body,
+      "ctaLabel": coalesce(ctaLabel, buttonLabel, actionLabel, linkLabel),
+      "ctaUrl": coalesce(ctaUrl, url, link, actionUrl, href),
+      coverImage,
+      image,
+      thumbnail
+    },
+  "categories": *[_type == "category"]
+    | order(title asc){
+      _id,
+      title,
+      "slug": coalesce(slug.current, slug)
+    },
+  "popularPosts": *[_type == "post" && !(_id in path('drafts.**'))]
+    | order(coalesce(popularityScore, popularity, viewCount, 0) desc, publishedAt desc, _createdAt desc)[0...5]{
+      _id,
+      title,
+      "slug": coalesce(slug.current, slug)
+    }
+}
+`;
+
 /**
  * 記事詳細用：本文と categories を含めて取得
  */

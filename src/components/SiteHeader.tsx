@@ -24,11 +24,15 @@ export default async function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/50 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-indigo-100/80 bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-[1200px] items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         {/* ロゴ */}
-        <Link href="/" className="text-xl font-black tracking-tight text-neutral-900 sm:text-2xl">
-          IKEHAYA
+        <Link
+          href="/"
+          className="text-xl font-black tracking-tight text-indigo-600 transition-colors hover:text-indigo-500 sm:text-2xl"
+          aria-label="マモーブログのトップページ"
+        >
+          マモーブログ
         </Link>
 
         {/* ナビ（デスクトップ） */}
@@ -37,7 +41,7 @@ export default async function SiteHeader() {
             <Link
               key={c._id}
               href={`/category/${c.slug}`}
-              className="inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+              className="inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
             >
               {c.title}
             </Link>
@@ -46,12 +50,12 @@ export default async function SiteHeader() {
 
         {/* モバイルナビ */}
         <div className="flex flex-1 justify-end md:hidden">
-          <div className="flex max-w-[75vw] gap-2 overflow-x-auto rounded-full border border-white/60 bg-white/70 px-3 py-2 shadow-sm">
+          <div className="flex max-w-[75vw] gap-2 overflow-x-auto rounded-full border border-indigo-100 bg-white/80 px-3 py-2 shadow-sm">
             {categories.map((c) => (
               <Link
                 key={c._id}
                 href={`/category/${c.slug}`}
-                className="whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium text-neutral-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                className="whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
               >
                 {c.title}
               </Link>

@@ -73,14 +73,14 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <article
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-900/5 ring-1 ring-black/5 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-900/10"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-indigo-50 bg-white/95 shadow-md shadow-indigo-100 transition-transform duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl"
     >
       <Link
         href={href}
-        className="flex h-full flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+        className="flex h-full flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
       >
         {/* 画像：ワイド比率で統一し、大きめにトリミング */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-indigo-100 via-white to-purple-50">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-indigo-100 via-white to-purple-100">
           <Image
             src={imgUrl}
             alt={title}
@@ -95,21 +95,21 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="flex flex-1 flex-col p-6">
           {/* タグ */}
           {tags.length > 0 && (
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-500">
               {tags.join(" / ")}
             </p>
           )}
 
           {/* タイトル */}
-          <h2 className="mt-3 line-clamp-2 text-xl font-bold leading-snug text-gray-900">
+          <h2 className="mt-3 line-clamp-2 text-xl font-bold leading-snug text-slate-900">
             {title}
           </h2>
 
           {/* 日付 */}
-          {date && <time className="mt-2 block text-sm font-medium text-gray-500">{date}</time>}
+          {date && <time className="mt-2 block text-sm font-semibold text-slate-500">{date}</time>}
 
           {/* 抜粋（下端に余白を残す） */}
-          {excerpt && <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-gray-600">{excerpt}</p>}
+          {excerpt && <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-slate-600">{excerpt}</p>}
 
           {/* フッター余白（高さ合わせ） */}
           <div className="mt-auto pt-4" />

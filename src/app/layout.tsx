@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white text-neutral-900 antialiased">
         <SiteHeader />
         {/* max-w を外し、全幅に変更 → ページ側で自由に制御 */}
-        <main className="min-h-[60vh] px-4 py-8 sm:px-6 lg:px-8">
+        <main className="min-h-[60vh] px-0 py-8 sm:py-12">
           {children}
         </main>
       </body>

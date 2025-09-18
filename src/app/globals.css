@@ -8,16 +8,19 @@ html {
 }
 
 body {
-  background-color: #ffffff; /* gray-0 */
-  color: #111827;            /* gray-900 */
+  background: linear-gradient(180deg, #eef2ff 0%, #ffffff 45%, #ffffff 100%);
+  color: #0f172a; /* slate-900 */
+  font-feature-settings: "palt" 1;
 }
 
 /* リンク（必要最小限） */
 a {
-  color: #111827;
+  color: #0f172a;
   transition: color 0.2s ease;
 }
-a:hover { color: #4f46e5; }  /* indigo-600 */
+a:hover {
+  color: #4f46e5; /* indigo-600 */
+}
 
 /* 画像・動画は軽く角丸だけ */
 img, video { border-radius: 12px; }

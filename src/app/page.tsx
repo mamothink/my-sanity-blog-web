@@ -46,8 +46,16 @@ export default async function HomePage() {
   const typedPosts = posts.filter((p): p is Record<string, unknown> => isRecord(p));
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-16">
+    <div className="mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <header className="mb-12 flex flex-col gap-3 text-center lg:mb-14 lg:text-left">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-indigo-500">Mamoo Blog</p>
+        <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">ブログ</h1>
+        <p className="text-base text-slate-600 sm:text-lg">
+          Web3、資産形成、ライフスタイルなど幅広いトピックをゆるく深掘りします。
+        </p>
+      </header>
+
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-14">
         <section className="lg:min-w-0 lg:flex-1">
           {typedPosts.length > 0 ? (
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
@@ -61,17 +69,17 @@ export default async function HomePage() {
         </section>
 
         <aside className="space-y-8 lg:sticky lg:top-28 lg:w-[320px] lg:flex-none">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-neutral-900">電子書籍の紹介</h2>
-            <ul className="mt-4 space-y-2 text-sm text-neutral-600">
+          <section className="rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100">
+            <h2 className="text-lg font-semibold text-slate-900">電子書籍の紹介</h2>
+            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
               <li>・電子書籍タイトルAの紹介文が入ります。</li>
               <li>・電子書籍タイトルBの紹介文が入ります。</li>
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-neutral-900">カテゴリー一覧</h2>
-            <ul className="mt-4 space-y-2 text-sm text-neutral-600">
+          <section className="rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100">
+            <h2 className="text-lg font-semibold text-slate-900">カテゴリー一覧</h2>
+            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
               <li>・カテゴリー1</li>
               <li>・カテゴリー2</li>
               <li>・カテゴリー3</li>
@@ -79,9 +87,9 @@ export default async function HomePage() {
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-neutral-900">人気記事ランキング</h2>
-            <ol className="mt-4 space-y-3 text-sm text-neutral-600">
+          <section className="rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100">
+            <h2 className="text-lg font-semibold text-slate-900">人気記事ランキング</h2>
+            <ol className="mt-4 space-y-3 text-sm leading-relaxed text-slate-600">
               <li>1. 人気記事タイトルサンプル</li>
               <li>2. 人気記事タイトルサンプル</li>
               <li>3. 人気記事タイトルサンプル</li>

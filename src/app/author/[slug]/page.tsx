@@ -29,8 +29,14 @@ type Post = {
 
 export const revalidate = 60;
 
-export default async function AuthorPage({ params }: { params: { slug: string } }) {
-  const author: Author | null = await client.fetch(AUTHOR_BY_SLUG_QUERY, { slug: params.slug });
+export default async function AuthorPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
+  const author: Author | null = await client.fetch(AUTHOR_BY_SLUG_QUERY, { slug });
   if (!author) {
     return (
       <main className="mx-auto max-w-2xl p-6">
@@ -42,7 +48,7 @@ export default async function AuthorPage({ params }: { params: { slug: string } 
     );
   }
 
-  const posts: Post[] = await client.fetch(POSTS_BY_AUTHOR_QUERY, { slug: params.slug });
+  const posts: Post[] = await client.fetch(POSTS_BY_AUTHOR_QUERY, { slug });
 
   const pictureUrl = author.picture
     ? urlFor(author.picture).width(160).height(160).fit("crop").url()

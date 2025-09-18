@@ -50,6 +50,9 @@ export default async function HomePage() {
     : [];
   const postsToRender = shouldShowPlaceholders ? placeholderPosts : typedPosts;
 
+  const sidebarCardClasses =
+    "group rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100 transition-transform duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl";
+
   return (
     <div className="mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
       <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-14">
@@ -66,7 +69,7 @@ export default async function HomePage() {
         </section>
 
         <aside className="space-y-8 lg:sticky lg:top-28 lg:w-[320px] lg:flex-none">
-          <section className="rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100">
+          <section className={sidebarCardClasses}>
             <h2 className="text-lg font-semibold text-slate-900">電子書籍の紹介</h2>
             <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
               <li>・電子書籍タイトルAの紹介文が入ります。</li>
@@ -74,7 +77,7 @@ export default async function HomePage() {
             </ul>
           </section>
 
-          <section className="rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100">
+          <section className={sidebarCardClasses}>
             <h2 className="text-lg font-semibold text-slate-900">カテゴリー一覧</h2>
             <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
               <li>・カテゴリー1</li>
@@ -84,7 +87,7 @@ export default async function HomePage() {
             </ul>
           </section>
 
-          <section className="rounded-3xl border border-indigo-50 bg-white/95 p-6 shadow-md shadow-indigo-100">
+          <section className={sidebarCardClasses}>
             <h2 className="text-lg font-semibold text-slate-900">人気記事ランキング</h2>
             <ol className="mt-4 space-y-3 text-sm leading-relaxed text-slate-600">
               <li>1. 人気記事タイトルサンプル</li>
